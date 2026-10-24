@@ -29,11 +29,14 @@ HTML = """
     <span><b style="color:#F59E0B">■</b> carro EW</span>
     <span>● verde / rojo = semáforo de cada eje</span>
     <span>Los EW que salen de un cruce llegan al siguiente en __TRAVEL__ s</span>
+    <span><b style="color:#9CA3AF">tramo x/K</b> = autos en el tramo EW (rojo = lleno)</span>
+    <span><b style="color:#EF4444">BLOQUEADO</b> = verde EW pero el tramo siguiente está lleno (spillback)</span>
+    <span><b style="color:#9CA3AF">esperan fuera</b> = llegadas que no caben en el tramo</span>
   </div>
 </div>
 <script>
 const D = __DATA__;
-const H = D.history, N = D.ids.length, T = H.length, TRAVEL = D.travel;
+const H = D.history, N = D.ids.length, T = H.length, TRAVEL = D.travel, K = D.storage;
 const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
 const play = document.getElementById('play'), scrub = document.getElementById('scrub');
 const speedSel = document.getElementById('speed'), clock = document.getElementById('clock');
@@ -70,6 +73,12 @@ function light(x, y, on, label) {
   ctx.fillStyle = on ? GREEN : RED; ctx.beginPath(); ctx.arc(x, y, 6, 0, 7); ctx.fill();
   ctx.fillStyle = '#9CA3AF'; ctx.font = '10px system-ui'; ctx.textAlign = 'center'; ctx.fillText(label, x, y - 13);
 }
+function pill(x, y, text, bg) {
+  ctx.font = 'bold 11px system-ui'; const w = ctx.measureText(text).width + 12;
+  const cx = Math.min(Math.max(x, w / 2 + 2), W - w / 2 - 2);
+  ctx.fillStyle = bg; ctx.beginPath(); ctx.roundRect(cx - w / 2, y - 9, w, 18, 9); ctx.fill();
+  ctx.fillStyle = '#F9FAFB'; ctx.textAlign = 'center'; ctx.fillText(text, cx, y + 4);
+}
 function more(x, y, k) {
   if (k <= 0) return;
   ctx.fillStyle = '#F9FAFB'; ctx.font = 'bold 11px system-ui'; ctx.textAlign = 'center'; ctx.fillText('+' + k, x, y);
@@ -104,6 +113,19 @@ function draw() {
     const e = ewTail(i, q.EW);
     for (let k = 0; k < Math.min(q.EW, e.cap); k++) car(e.stop - CAR_L / 2 - k * (CAR_L + GAP), y - 7, true, EW);
     more(e.left + 10, y - 18, q.EW - e.cap);
+    // ocupación del tramo EW que entra a este cruce y autos que esperan fuera de la red
+    const mid = (e.left + e.stop) / 2, occ = s.occupancy ? s.occupancy[i] : null;
+    if (occ !== null) {
+      const full = occ >= K;
+      pill(mid, y + ROAD / 2 + 56, 'tramo ' + occ + '/' + K, full ? RED : '#4B5563');
+    }
+    const back = s.backlog ? s.backlog[i] : 0;
+    if (back > 0) pill(mid, y - ROAD / 2 - 70, back + ' esperan fuera', '#6B7280');
+    // spillback: verde EW con cola, pero el tramo siguiente está lleno
+    if (i < N - 1 && ph === 'EW' && q.EW > 0 && s.occupancy && s.occupancy[i + 1] >= K) {
+      ctx.strokeStyle = RED; ctx.lineWidth = 3; ctx.strokeRect(x - ROAD / 2 - 3, y - ROAD / 2 - 3, ROAD + 6, ROAD + 6);
+      pill(x + ROAD, y - ROAD / 2 - 100, 'BLOQUEADO: tramo a ' + D.ids[i + 1] + ' lleno', RED);
+    }
     // semáforos y etiquetas
     light(x - ROAD / 2 - 14, y - ROAD / 2 - 14, ph === 'NS', 'NS');
     light(x - ROAD / 2 - 14, y + ROAD / 2 + 14, ph === 'EW', 'EW');
@@ -159,7 +181,9 @@ def render_animation(selected: dict, params: dict) -> None:
         "ids": ids,
         "plans": [selected["plans"][i] for i in ids],
         "travel": params["travel_time_s"],
-        "history": [{"phases": h["phases"], "queues": h["queues"], "departures": h["departures"]}
+        "storage": params["storage_vehicles"],
+        "history": [{"phases": h["phases"], "queues": h["queues"], "departures": h["departures"],
+                     "occupancy": h.get("occupancy"), "backlog": h.get("backlog")}
                     for h in selected["history"]],
     }
     html = (HTML.replace("__DATA__", json.dumps(data, separators=(",", ":")))

@@ -91,9 +91,10 @@ def _plan_bar(plan: dict, cycle: int, all_red: int) -> str:
 def render_explainer(params: dict, result: dict | None) -> None:
     ids = [it["id"] for it in params["intersections"]]
     n = len(ids)
-    cycle = params.get("cycle_s", 68)
-    all_red = params.get("all_red_s", 4)
-    travel = params.get("travel_time_s", 20)
+    cycle = params["cycle_s"]
+    all_red = params["all_red_s"]
+    travel = params["travel_time_s"]
+    storage = params["storage_vehicles"]
     plans = params["plans"]
 
     steps = ["Corredor", "Elegir plan", "Simular todo", "QUBO → qubits", "QAOA en Qiskit", "Comparar"]
@@ -104,7 +105,8 @@ def render_explainer(params: dict, result: dict | None) -> None:
     # 1 · corredor
     c1 = (f'<div class="sx-card"><h4><span class="sx-num">1</span>El corredor</h4>'
           f'<p>{n} cruces en cadena. Los autos que salen por EW de un cruce llegan al siguiente '
-          f'{travel} s después (el número sobre cada tramo). Cada cruce tiene una cola NS y una EW.</p>'
+          f'{travel} s después (el número sobre cada tramo). Cada tramo EW guarda como máximo '
+          f'<b>{storage} autos</b>: si está lleno, el cruce anterior no puede despachar aunque tenga verde.</p>'
           f'{_corridor(ids, travel)}</div>')
 
     # 2 · planes

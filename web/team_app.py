@@ -13,17 +13,16 @@ from web.explainer import render_explainer
 def render():
     st.title("🚦Simaphuru")
     st.write("Cruces NS/EW conectados por EW, QUBO one-hot y QAOA en Qiskit.")
-    st.info("Parámetros ilustrativos. Cada tramo EW guarda hasta K_e vehículos (cola + en tránsito); "
-            "si el tramo siguiente está lleno, el cruce no despacha aunque tenga verde (spillback).")
+    st.info("Parámetros ilustrativos, no calibrados. Cada tramo EW guarda como máximo K autos: si el tramo "
+            "siguiente está lleno, el cruce no despacha aunque tenga verde (spillback). No simula paradas de bus.")
     n = st.sidebar.selectbox("Cruces conectados", [2, 5])
     params = default_team_params(n)
     with_qaoa = st.sidebar.checkbox("Ejecutar QAOA en Qiskit local", value=True)
     seed = int(st.sidebar.number_input("Semilla del optimizador", min_value=0, value=7, step=1))
     depth = st.sidebar.selectbox("Capas QAOA", [1, 2])
-    params["travel_time_s"] = st.sidebar.slider("Viaje entre cruces · s", 1, 90, 20)
-    params["storage_vehicles"] = int(st.sidebar.number_input(
-        "Capacidad por tramo EW · K_e (veh)", min_value=1, max_value=200,
-        value=params["storage_vehicles"], step=1))
+    params["travel_time_s"] = st.sidebar.slider("Viaje entre cruces · s", 1, 90, params["travel_time_s"])
+    params["storage_vehicles"] = st.sidebar.slider("Capacidad de cada tramo EW (K) · veh", 1, 40,
+                                                   params["storage_vehicles"])
     with st.sidebar.expander("Llegadas externas por cruce · veh/min"):
         for inter in params["intersections"]:
             for axis in ("NS", "EW"):
