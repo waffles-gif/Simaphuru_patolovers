@@ -1,0 +1,163 @@
+{
+  "schema_version": "0.1",
+  "example": false,
+  "note": "Generado por R3 (model/enumerate.py). Parametros ilustrativos, no es una avenida real.",
+  "inputs": {
+    "horizon_s": 600,
+    "cycle_s": 68,
+    "weights": {
+      "delay": 1.0,
+      "peak_queue": 0.6,
+      "residual": 1.0
+    },
+    "intersections": [
+      {
+        "id": "A",
+        "name": "Cruce A",
+        "arrival_rate_vpm": {
+          "NS": 18,
+          "EW": 12
+        }
+      },
+      {
+        "id": "B",
+        "name": "Cruce B",
+        "arrival_rate_vpm": {
+          "NS": 15,
+          "EW": 14
+        }
+      }
+    ],
+    "plans": [
+      {
+        "id": 0,
+        "name": "Balanced",
+        "green_s": {
+          "NS": 30,
+          "EW": 30
+        }
+      },
+      {
+        "id": 1,
+        "name": "NS priority",
+        "green_s": {
+          "NS": 40,
+          "EW": 20
+        }
+      }
+    ],
+    "link": {
+      "from": "A",
+      "to": "B",
+      "travel_time_s": 25
+    }
+  },
+  "_comment_model": "Lo llena R3 (motor de trafico): costos sacados del simulador.",
+  "model": {
+    "local_costs": {
+      "A": [
+        3.837056,
+        3.012667
+      ],
+      "B": [
+        2.264943,
+        4.204023
+      ]
+    },
+    "pair_costs": {
+      "_comment": "pair_costs[planA][planB] = costo extra por la interaccion A->B (total - local_A - local_B; local + par = total exacto)",
+      "A-B": [
+        [
+          6.576695,
+          6.701418
+        ],
+        [
+          4.978391,
+          5.04922
+        ]
+      ]
+    },
+    "combinations": [
+      {
+        "plans": {
+          "A": 0,
+          "B": 0
+        },
+        "total_cost": 12.678693,
+        "metrics": {
+          "mean_delay_s": 86.181,
+          "peak_queue": 122,
+          "residual": 193
+        },
+        "per_intersection_cost": {
+          "A": 3.837056,
+          "B": 8.841637
+        }
+      },
+      {
+        "plans": {
+          "A": 0,
+          "B": 1
+        },
+        "total_cost": 14.742496,
+        "metrics": {
+          "mean_delay_s": 97.247,
+          "peak_queue": 164,
+          "residual": 220
+        },
+        "per_intersection_cost": {
+          "A": 3.837056,
+          "B": 10.905441
+        }
+      },
+      {
+        "plans": {
+          "A": 1,
+          "B": 0
+        },
+        "total_cost": 10.256,
+        "metrics": {
+          "mean_delay_s": 73.591,
+          "peak_queue": 96,
+          "residual": 156
+        },
+        "per_intersection_cost": {
+          "A": 3.012667,
+          "B": 7.243333
+        }
+      },
+      {
+        "plans": {
+          "A": 1,
+          "B": 1
+        },
+        "total_cost": 12.26591,
+        "metrics": {
+          "mean_delay_s": 84.301,
+          "peak_queue": 137,
+          "residual": 182
+        },
+        "per_intersection_cost": {
+          "A": 3.012667,
+          "B": 9.253243
+        }
+      }
+    ]
+  },
+  "_comment_classical": "Lo llena R3: referencia exacta por enumeracion.",
+  "classical": {
+    "method": "brute_force",
+    "optimal_plans": {
+      "A": 1,
+      "B": 0
+    },
+    "optimal_x": [
+      0,
+      1,
+      1,
+      0
+    ],
+    "optimal_cost": 10.256,
+    "runtime_ms": 7.209
+  }
+}
