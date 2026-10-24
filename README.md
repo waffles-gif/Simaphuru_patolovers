@@ -8,10 +8,10 @@
 
 | Rol | Nombre | Qué hizo |
 |---|---|---|
-| R1 · Evidencia y modelo físico | Rafael Chamayo | [completar] |
-| R2 · QUBO y Qiskit | [nombre] | [completar] |
-| R3 · Motor de tráfico | [nombre] | [completar] |
-| R4 · Interfaz e integración | [nombre] | [completar] |
+| R1 · Evidencia y modelo físico | Daniel | [completar] |
+| R2 · QUBO y Qiskit | Rafael | [completar] |
+| R3 · Motor de tráfico | Valentino | [completar] |
+| R4 · Interfaz e integración | Tamara| [completar] |
 
 ## Problema
 
