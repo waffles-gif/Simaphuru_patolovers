@@ -1,0 +1,89 @@
+{
+  "schema_version": "0.1",
+  "example": true,
+  "note": "Datos de ejemplo para que R2, R3 y R4 trabajen en paralelo. Los numeros NO son reales.",
+
+  "inputs": {
+    "horizon_s": 600,
+    "cycle_s": 68,
+    "weights": { "delay": 1.0, "peak_queue": 0.6, "residual": 1.0 },
+    "intersections": [
+      { "id": "A", "name": "Cruce A", "arrival_rate_vpm": { "NS": 18, "EW": 12 } },
+      { "id": "B", "name": "Cruce B", "arrival_rate_vpm": { "NS": 15, "EW": 14 } }
+    ],
+    "plans": [
+      { "id": 0, "name": "Balanced", "green_s": { "NS": 30, "EW": 30 } },
+      { "id": 1, "name": "NS priority", "green_s": { "NS": 40, "EW": 20 } }
+    ],
+    "link": { "from": "A", "to": "B", "travel_time_s": 25 }
+  },
+
+  "_comment_model": "Lo llena R3 (motor de trafico): costos sacados del simulador.",
+  "model": {
+    "local_costs": {
+      "A": [3.1, 2.6],
+      "B": [2.9, 3.4]
+    },
+    "pair_costs": {
+      "_comment": "pair_costs[planA][planB] = costo extra por la interaccion A->B",
+      "A-B": [[0.2, 0.5], [0.1, 0.6]]
+    },
+    "combinations": [
+      { "plans": { "A": 0, "B": 0 }, "total_cost": 6.2, "metrics": { "mean_delay_s": 41.0, "peak_queue": 9, "residual": 3 } },
+      { "plans": { "A": 0, "B": 1 }, "total_cost": 7.0, "metrics": { "mean_delay_s": 47.5, "peak_queue": 11, "residual": 4 } },
+      { "plans": { "A": 1, "B": 0 }, "total_cost": 5.6, "metrics": { "mean_delay_s": 36.2, "peak_queue": 8, "residual": 2 } },
+      { "plans": { "A": 1, "B": 1 }, "total_cost": 6.6, "metrics": { "mean_delay_s": 44.1, "peak_queue": 10, "residual": 3 } }
+    ]
+  },
+
+  "_comment_qubo": "Lo llena R2. Variable x_{cruce,plan} = 1 si ese cruce usa ese plan (one-hot).",
+  "qubo": {
+    "encoding": "one-hot",
+    "variables": ["x_A0", "x_A1", "x_B0", "x_B1"],
+    "qubit_order": "q0=x_A0, q1=x_A1, q2=x_B0, q3=x_B1 (OJO: Qiskit imprime el bitstring al reves: q3q2q1q0)",
+    "penalty_P": 10.0,
+    "constraints": ["x_A0 + x_A1 = 1", "x_B0 + x_B1 = 1"],
+    "constant": 20.0,
+    "linear": { "x_A0": -6.9, "x_A1": -7.4, "x_B0": -7.1, "x_B1": -6.6 },
+    "quadratic": {
+      "x_A0*x_A1": 20.0,
+      "x_B0*x_B1": 20.0,
+      "x_A0*x_B0": 0.2,
+      "x_A0*x_B1": 0.5,
+      "x_A1*x_B0": 0.1,
+      "x_A1*x_B1": 0.6
+    }
+  },
+
+  "_comment_classical": "Lo llena R3: referencia exacta por enumeracion.",
+  "classical": {
+    "method": "brute_force",
+    "optimal_plans": { "A": 1, "B": 0 },
+    "optimal_x": [0, 1, 1, 0],
+    "optimal_cost": 5.6,
+    "runtime_ms": 0.4
+  },
+
+  "_comment_quantum": "Lo llena R2: resultado de QAOA en Qiskit.",
+  "quantum": {
+    "backend": "aer_simulator",
+    "algorithm": "QAOA",
+    "reps_p": 2,
+    "optimizer": "COBYLA",
+    "shots": 4096,
+    "seed": 42,
+    "best_params": { "gamma": [0.41, 0.77], "beta": [0.62, 0.29] },
+    "top_samples": [
+      { "x": [0, 1, 1, 0], "probability": 0.38, "cost": 5.6, "feasible": true },
+      { "x": [1, 0, 1, 0], "probability": 0.21, "cost": 6.2, "feasible": true },
+      { "x": [0, 1, 0, 1], "probability": 0.14, "cost": 6.6, "feasible": true },
+      { "x": [1, 0, 0, 1], "probability": 0.09, "cost": 7.0, "feasible": true },
+      { "x": [0, 1, 0, 0], "probability": 0.05, "cost": 12.6, "feasible": false }
+    ],
+    "feasible_probability": 0.82,
+    "optimal_probability": 0.38,
+    "expected_cost_feasible": 6.08,
+    "gap_vs_optimal": 0.48,
+    "convergence": [9.4, 8.1, 7.3, 6.9, 6.6, 6.4, 6.3]
+  }
+}
