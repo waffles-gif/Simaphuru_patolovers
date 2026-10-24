@@ -46,7 +46,7 @@ Los resultados locales quedan en `artifacts/`, ignorado por Git salvo los cuatro
 
 ## Qué incluye el proyecto
 
-- Motor del equipo: corredor EW con colas NS/EW, entradas externas en cada cruce, viaje de 25 s, horizonte 600 s y colas sin límite.
+- Motor del equipo: corredor EW con colas NS/EW, entradas externas en cada cruce, viaje de 20 s, horizonte 1360 s, almacenamiento finito K_e = 12 por tramo EW y spillback (`team-ns-ew-v2`).
 - Dos programas por cruce: NS/EW 30/30 o 40/20 s, ciclo 68 s y dos despejes de 4 s. El plan 1 favorece NS, no el eje EW del corredor.
 - Enumeración de 4 o 32 decisiones y referencia clásica por programación dinámica del costo por pares vecinos.
 - QUBO one-hot, penalización con cota demostrada y auditoría de 16 o 1024 estados binarios. Dos cruces reproducen los costos; cinco se auditan como aproximación.

@@ -25,7 +25,7 @@ from quantum.qubo import (
 from simaphuru import __version__
 
 UPSTREAM_COMMIT = "ee4eed52ba3438242aa213532c1eb5761ae5f70e"
-TEAM_MODEL_VERSION = "team-ns-ew-v1"
+TEAM_MODEL_VERSION = "team-ns-ew-v2"
 
 
 class Rates(BaseModel):
@@ -68,6 +68,7 @@ class TeamParams(BaseModel):
     all_red_s: int = Field(ge=1)
     service_rate_vps: float = Field(gt=0, le=1)
     travel_time_s: int = Field(ge=1, le=300)
+    storage_vehicles: int = Field(ge=1, le=500)
     weights: Weights
     intersections: list[Intersection] = Field(min_length=2, max_length=5)
     plans: list[Plan] = Field(min_length=2, max_length=2)
@@ -108,6 +109,7 @@ def params_from_payload(payload: dict) -> tuple[dict, list[str]]:
     for key in ("horizon_s", "cycle_s", "weights", "intersections", "plans"):
         params[key] = inputs[key]
     params["travel_time_s"] = inputs["link"]["travel_time_s"]
+    params["storage_vehicles"] = inputs.get("storage_vehicles", params["storage_vehicles"])
     notes = ["schema 0.1 omite all_red_s y service_rate_vps: se heredan 4 s y 0.5 veh/s "
              "de model/traffic.py; todos los costos deben reproducirse antes de integrarlo"]
     return TeamParams.model_validate(params).model_dump(), notes
@@ -254,6 +256,6 @@ def run_team_experiment(params: dict, *, qaoa: bool = True, depth: int = 1,
         "versions": {"simaphuru": __version__, "qiskit": version("qiskit"), "python": platform.python_version()},
         "optimizer_seed": seed, "elapsed_s": perf_counter() - started,
         "claims": {"synthetic": True, "empirically_calibrated": False,
-                   "finite_storage": False, "spillback": False,
+                   "finite_storage": True, "spillback": True,
                    "quantum_advantage_demonstrated": False},
     }

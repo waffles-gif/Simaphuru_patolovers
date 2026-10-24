@@ -6,13 +6,22 @@
 
 La salida 0.2 conserva los campos de integración `inputs`, `model.local_costs`, `model.pair_costs`, `model.combinations` y `classical` de 0.1, y añade parámetros completos sin redondear, huella, versión, auditoría, `quantum` e historiales. `quantum` es null si no se solicita QAOA. `example=false` significa resultado calculado; los parámetros siguen siendo sintéticos. No se convierte automáticamente a schema 1.0.
 
-`config_hash` depende de TODOS los parámetros y de `team-ns-ew-v1`. La vista invalida resultados al cambiar también semilla del optimizador, profundidad o activación QAOA. El historial se regenera desde los mismos parámetros y planes. `upstream_commit` identifica la base auditada; la versión del paquete identifica la adaptación.
+`config_hash` depende de TODOS los parámetros y de `team-ns-ew-v2`. La vista invalida resultados al cambiar también semilla del optimizador, profundidad o activación QAOA. El historial se regenera desde los mismos parámetros y planes. `upstream_commit` identifica la base auditada; la versión del paquete identifica la adaptación.
+
+### Almacenamiento finito y spillback (`team-ns-ew-v2`)
+
+- `storage_vehicles` (K_e, vehículos, default 12) es la capacidad del tramo EW que entra a cada cruce i. Ocupación = cola EW de i + autos en tránsito hacia i; nunca supera K_e.
+- Spillback: el EW de i solo despacha si el tramo de i+1 tiene espacio (K_e − cola − tránsito > 0). El último cruce sale sin límite. Si el destino está lleno no sale nadie aunque haya verde, y el crédito fraccional de servicio se reinicia.
+- Desborde externo: las llegadas externas EW que no caben esperan en un backlog FIFO fuera de la red. Cuentan en `arrived_external`, suman veh-s a la demora y entran al balance. NS no tiene límite.
+- Orden por segundo y por cruce (A → B → …): llegadas externas y backlog → aterrizan los autos en tránsito → servicio con chequeo aguas abajo → demora (cola + backlog).
+- El costo no cambia: C = wD·D/60 + wP·Qmax/30 + wR·R/30. `blocked_s` por cruce (segundos con verde EW, cola no vacía y destino lleno) es solo de reporte. Por cruce también se publican `backlog_end`, `in_transit_end` y `peak_occupancy`; `metrics.blocked_s` suma los cruces.
+- Defaults de R1 (`parametros.csv`): horizonte 1360 s (20 ciclos), viaje 20 s, K_e = 12. Siguen siendo sintéticos.
 
 Las probabilidades siguen el índice one-hot de 16/1024 estados, incluidos los inválidos. `feasible_probability` es la suma de estados con un plan por cruce; `original_optimal_probability` no está condicionada. `conditional_expected_original` promedia solo estados factibles y se publica junto a esa masa. No se define costo de tráfico para un estado inválido. `representative_plans` usa el candidato factible de mayor probabilidad, no una búsqueda oculta del óptimo clásico.
 
-La CLI acepta el JSON 0.1 de R3 y comprueba sus combinaciones y factores frente al motor antes de ejecutar QAOA. Los campos ausentes `all_red_s=4` y `service_rate_vps=0.5` se heredan explícitamente del motor y se anotan en `import_notes`. Si no se reproducen los costos dentro de 1e-5, se rechaza la integración. La tolerancia cubre redondeo a seis decimales, no permite mezclar modelos físicos distintos. El archivo ficticio `example_result.json` se rechaza.
+La CLI acepta el JSON 0.1 de R3 y comprueba sus combinaciones y factores frente al motor antes de ejecutar QAOA. Los campos ausentes `all_red_s=4` y `service_rate_vps=0.5` se heredan explícitamente del motor y se anotan en `import_notes`. Si `inputs.storage_vehicles` falta (JSON generado con v1), se hereda K_e = 12; como v1 no tenía almacenamiento finito, sus costos no se reproducen y el JSON se rechaza. Si no se reproducen los costos dentro de 1e-5, se rechaza la integración. La tolerancia cubre redondeo a seis decimales, no permite mezclar modelos físicos distintos. El archivo ficticio `example_result.json` se rechaza.
 
-`network_pending` incluye colas y tránsito. `metrics.residual` conserva la definición original del motor: solo colas. La demora original por llegada a colas no es tiempo de viaje global por vehículo único. No renombrar esas métricas como equivalentes.
+`network_pending` incluye colas, backlog externo y tránsito. `metrics.residual` = colas NS/EW + backlog externo EW al final (en v1 era solo colas). `metrics.peak_queue` sigue siendo la cola máxima de un eje dentro de la red, sin backlog. La demora original por llegada a colas no es tiempo de viaje global por vehículo único. No renombrar esas métricas como equivalentes.
 
 ## Vista experimental: schema 1.0
 

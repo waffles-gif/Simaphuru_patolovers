@@ -95,6 +95,7 @@ def run(params):
             "intersections": params["intersections"],
             "plans": params["plans"],
             "link": {"from": "A", "to": "B", "travel_time_s": params["travel_time_s"]},
+            "storage_vehicles": params["storage_vehicles"],
         },
         "_comment_model": "Lo llena R3 (motor de trafico): costos sacados del simulador.",
         "model": {
