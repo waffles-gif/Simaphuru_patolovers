@@ -6,6 +6,8 @@ import pandas as pd
 import streamlit as st
 
 from simaphuru.team import default_team_params, run_team_experiment, team_fingerprint
+from web.animation import render_animation
+from web.explainer import render_explainer
 
 
 def render():
@@ -39,6 +41,9 @@ def render():
                 params, qaoa=with_qaoa, depth=depth, seed=seed
             )
             st.session_state["team_fingerprint"] = fingerprint
+    current = st.session_state.get("team_experiment") if st.session_state.get("team_fingerprint") == fingerprint else None
+    with st.expander("🧭 ¿Cómo funciona? Paso a paso", expanded=True):
+        render_explainer(params, current)
     if st.session_state.get("team_fingerprint") != fingerprint:
         st.write("Ejecuta el experimento para obtener resultados de esta configuración.")
         return
@@ -86,6 +91,7 @@ def render():
     st.subheader("Evolución del mismo experimento")
     label = st.selectbox("Planes para inspeccionar", list(result["histories"]))
     selected = result["histories"][label]
+    render_animation(selected, params)
     history = selected["history"]
     instant = st.slider("Instante · segundos", 0, len(history) - 1, 0)
     snapshot = history[instant]
