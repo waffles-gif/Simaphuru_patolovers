@@ -119,7 +119,7 @@
   },
   "approx_picks_true_optimum": false,
   "approx_choice_real_cost": 28.76107269281565,
-  "runtime_ms_full_enumeration": 142.0075249999968,
+  "runtime_ms_full_enumeration": 96.91350010689348,
   "combinations": [
     {
       "plans": [

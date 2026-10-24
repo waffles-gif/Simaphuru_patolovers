@@ -15,16 +15,16 @@
         "id": "A",
         "name": "Cruce A",
         "arrival_rate_vpm": {
-          "NS": 18,
-          "EW": 12
+          "NS": 18.0,
+          "EW": 12.0
         }
       },
       {
         "id": "B",
         "name": "Cruce B",
         "arrival_rate_vpm": {
-          "NS": 15,
-          "EW": 14
+          "NS": 15.0,
+          "EW": 14.0
         }
       }
     ],
@@ -158,6 +158,6 @@
       0
     ],
     "optimal_cost": 10.256,
-    "runtime_ms": 7.209
+    "runtime_ms": 4.424
   }
 }
