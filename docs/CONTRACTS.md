@@ -13,7 +13,8 @@ La salida 0.2 conserva los campos de integración `inputs`, `model.local_costs`,
 - `storage_vehicles` (K_e, vehículos, default 12) es la capacidad del tramo EW que entra a cada cruce i. Ocupación = cola EW de i + autos en tránsito hacia i; nunca supera K_e.
 - Spillback: el EW de i solo despacha si el tramo de i+1 tiene espacio (K_e − cola − tránsito > 0). El último cruce sale sin límite. Si el destino está lleno no sale nadie aunque haya verde, y el crédito fraccional de servicio se reinicia.
 - Desborde externo: las llegadas externas EW que no caben esperan en un backlog FIFO fuera de la red. Cuentan en `arrived_external`, suman veh-s a la demora y entran al balance. NS no tiene límite.
-- Orden por segundo y por cruce (A → B → …): llegadas externas y backlog → aterrizan los autos en tránsito → servicio con chequeo aguas abajo → demora (cola + backlog).
+- Prioridad del corredor: mientras el EW de i-1 está en verde con cola, reserva 1 lugar en el tramo de i; el backlog externo de i solo usa el espacio restante.
+- Orden por segundo y por cruce (A → B → …): llegadas externas y backlog (respetando la reserva) → aterrizan los autos en tránsito → servicio con chequeo aguas abajo → demora (cola + backlog).
 - El costo no cambia: C = wD·D/60 + wP·Qmax/30 + wR·R/30. `blocked_s` por cruce (segundos con verde EW, cola no vacía y destino lleno) es solo de reporte. Por cruce también se publican `backlog_end`, `in_transit_end` y `peak_occupancy`; `metrics.blocked_s` suma los cruces.
 - Defaults de R1 (`parametros.csv`): horizonte 1360 s (20 ciclos), viaje 20 s, K_e = 12. Siguen siendo sintéticos.
 

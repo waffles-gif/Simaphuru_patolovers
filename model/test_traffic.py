@@ -140,6 +140,24 @@ def test_caso3_despeje_sin_movimiento():
     assert _occupancy(B) == 0
 
 
+def test_corredor_tiene_prioridad_sobre_backlog_externo():
+    """B lleno y con mucha demanda externa EW: igual entran autos desde A al liberarse lugar."""
+    p = _manual_params(30)
+    p["intersections"][1]["arrival_rate_vpm"] = {"NS": 0, "EW": 60}
+    r = simulate_chain([0, 0], p, initial_state={"t0": 34, "queues": [{"EW": 10}, {"EW": 12}]})
+    A, B = r["per_intersection"]
+    assert A["served"]["EW"] >= 5
+    assert B["backlog_end"] > 0          # el externo sigue esperando
+    assert _occupancy(B) <= p["storage_vehicles"]
+
+
+def test_corredor_despacha_con_defaults():
+    """Con los parametros de R1 el EW de A sigue alimentando a B (no queda casi bloqueado)."""
+    for plans in COMBOS:
+        A, _ = simulate_corridor(plans, default_params())["per_intersection"]
+        assert A["served"]["EW"] >= 50, plans
+
+
 def test_network_conservation_with_backlog():
     """Llegadas externas = salidas de la red + colas + en transito + backlog (5 cruces)."""
     p = chain_params(5)

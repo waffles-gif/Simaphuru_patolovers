@@ -20,9 +20,14 @@ Modelo (v2, con almacenamiento finito y spillback):
 - Desborde externo: las llegadas externas EW que no caben en su tramo esperan en una
   cola externa (backlog) FIFO fuera de la red y entran cuando hay espacio. Cuentan como
   llegadas, suman demora y entran en la conservacion. Las llegadas NS no tienen limite.
+- Prioridad del corredor: mientras el EW del cruce anterior (i-1) esta en verde con cola,
+  le reserva 1 lugar en el tramo de i (servicio <= 1 veh/s); el backlog externo de i solo
+  usa el espacio que sobra. Sin esa reserva el backlog ocupa cada lugar que se libera y el
+  cruce anterior casi no despacha.
 
 Orden dentro de cada segundo, para cada cruce en orden A -> B -> ...:
-  (a) llegadas externas (EW al backlog) y del backlog al tramo segun el espacio,
+  (a) llegadas externas (EW al backlog) y del backlog al tramo segun el espacio que
+      deja la reserva del corredor,
   (b) aterrizan los autos en transito hacia el cruce,
   (c) servicio, con chequeo de espacio aguas abajo para el EW,
   (d) se acumula la demora (cola + backlog).
@@ -151,6 +156,12 @@ def simulate_chain(plan_ids, params, keep_history=False, initial_state=None):
         """Lugares libres en el tramo EW que entra al cruce i."""
         return K - len(queues[i]["EW"]) - transit_n[i]
 
+    def corridor_reserve(i, t):
+        """Lugares del tramo de i reservados al flujo que viene del EW de i-1."""
+        if i == 0 or not queues[i - 1]["EW"]:
+            return 0
+        return 1 if phase(t, greens[i - 1], cycle, all_red) == "EW" else 0
+
     def downstream_full(i):
         """True si el EW del cruce i no puede despachar (el ultimo sale sin limite)."""
         return i + 1 < n and space(i + 1) <= 0
@@ -168,14 +179,15 @@ def simulate_chain(plan_ids, params, keep_history=False, initial_state=None):
                 q = queues[i][a]
 
                 # (a) llegadas externas (acumulador fraccional, igual que core.js).
-                #     Las EW pasan por el backlog y entran al tramo solo si hay espacio.
+                #     Las EW pasan por el backlog y entran al tramo solo con el espacio
+                #     que no esta reservado al corredor.
                 acc[i][a] += rates[i][a]
                 while acc[i][a] >= 1 - 1e-10:
                     acc[i][a] -= 1
                     (backlog[i] if a == "EW" else q).append(t)
                     arrived_ext[i][a] += 1
                 if a == "EW":
-                    while backlog[i] and space(i) > 0:
+                    while backlog[i] and space(i) > corridor_reserve(i, t):
                         q.append(backlog[i].pop(0))
 
                     # (b) aterrizan los autos en transito desde el cruce anterior
