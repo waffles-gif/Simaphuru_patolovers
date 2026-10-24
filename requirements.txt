@@ -1,9 +1,3 @@
-# Probado con Python 3.11+ el 24/10/2026
-qiskit==2.6.1
-qiskit-aer==0.18.0
-qiskit-optimization==0.7.0
-numpy>=1.26
-scipy>=1.11
-matplotlib>=3.8
-# Opcional: solo si corren en hardware real de IBM
-# qiskit-ibm-runtime==0.51.0
+# Instalar desde la raíz: python -m pip install -r requirements.txt
+-c requirements.lock
+-e .[dev]

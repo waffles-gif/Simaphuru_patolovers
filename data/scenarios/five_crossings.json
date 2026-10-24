@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "scenario_id": "synthetic-five-v1",
+  "provenance": "Plantilla sintética de cinco cruces, no cinco ubicaciones verificadas en Javier Prado. QUBO potencialmente aproximado.",
+  "junctions": 5,
+  "horizon_s": 680,
+  "storage_vehicles": 12,
+  "travel_time_s": 20,
+  "service_veh_s": 0.5,
+  "main_veh_min": 14,
+  "side_veh_min": 6,
+  "arrival_mode": "poisson",
+  "peak_start_s": 240,
+  "peak_end_s": 420,
+  "peak_factor": 1.2,
+  "blockages": [{"junction": 3, "start_s": 300, "duration_s": 68, "capacity_factor": 0}]
+}

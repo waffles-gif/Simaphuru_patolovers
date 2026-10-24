@@ -22,7 +22,10 @@ import json
 import os
 import time
 
-from traffic import default_params, simulate_chain
+try:
+    from .traffic import default_params, simulate_chain
+except ImportError:  # Permite también python model/chain.py.
+    from traffic import default_params, simulate_chain
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 

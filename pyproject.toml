@@ -1,0 +1,45 @@
+[build-system]
+requires = ["hatchling>=1.25,<2"]
+build-backend = "hatchling.build"
+
+[project]
+name = "simaphuru"
+version = "0.2.0"
+description = "Laboratorio reproducible de tráfico conectado, QUBO y QAOA con Qiskit"
+readme = "README.md"
+requires-python = ">=3.11,<3.14"
+dependencies = [
+  "numpy>=2.1,<2.4",
+  "scipy>=1.15,<1.17",
+  "pydantic>=2.10,<3",
+  "qiskit>=2.0,<3",
+  "qiskit-aer==0.18.0",
+  "qiskit-optimization==0.7.0",
+  "matplotlib>=3.8,<4",
+  "streamlit>=1.45,<2",
+  "pandas>=2.2,<3",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<10", "ruff>=0.11,<1"]
+
+[project.scripts]
+simaphuru = "simaphuru.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["simaphuru", "model", "quantum", "web"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests", "model/test_traffic.py"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]
+
+[tool.ruff.lint.per-file-ignores]
+# Archivos incorporados del equipo: se preservan sus decisiones de estilo.
+"model/enumerate.py" = ["E731"]
+"model/test_traffic.py" = ["I001"]
