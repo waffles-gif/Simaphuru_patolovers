@@ -35,7 +35,7 @@ def test_team_view_executes_qiskit_and_invalidates_another_corridor():
     assert not app.exception
     result = app.session_state["team_experiment"]
     assert result["quantum"]["feasible_probability"] > 0
-    assert result["model_version"] == "team-ns-ew-v1"
+    assert result["model_version"] == "team-ns-ew-v2"
     app.sidebar.selectbox[0].set_value(5).run(timeout=30)
     assert not app.exception
     assert len(app.metric) == 0
