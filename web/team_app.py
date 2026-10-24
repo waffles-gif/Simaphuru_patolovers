@@ -13,13 +13,17 @@ from web.explainer import render_explainer
 def render():
     st.title("🚦Simaphuru")
     st.write("Cruces NS/EW conectados por EW, QUBO one-hot y QAOA en Qiskit.")
-    st.info("Parámetros ilustrativos. Este motor aún usa colas sin límite; no simula spillback ni paradas de bus.")
+    st.info("Parámetros ilustrativos. Cada tramo EW guarda hasta K_e vehículos (cola + en tránsito); "
+            "si el tramo siguiente está lleno, el cruce no despacha aunque tenga verde (spillback).")
     n = st.sidebar.selectbox("Cruces conectados", [2, 5])
     params = default_team_params(n)
     with_qaoa = st.sidebar.checkbox("Ejecutar QAOA en Qiskit local", value=True)
     seed = int(st.sidebar.number_input("Semilla del optimizador", min_value=0, value=7, step=1))
     depth = st.sidebar.selectbox("Capas QAOA", [1, 2])
-    params["travel_time_s"] = st.sidebar.slider("Viaje entre cruces · s", 1, 90, 25)
+    params["travel_time_s"] = st.sidebar.slider("Viaje entre cruces · s", 1, 90, 20)
+    params["storage_vehicles"] = int(st.sidebar.number_input(
+        "Capacidad por tramo EW · K_e (veh)", min_value=1, max_value=200,
+        value=params["storage_vehicles"], step=1))
     with st.sidebar.expander("Llegadas externas por cruce · veh/min"):
         for inter in params["intersections"]:
             for axis in ("NS", "EW"):
@@ -53,13 +57,15 @@ def render():
     left.metric("Costo del programa base", f"{classical['baseline_cost']:.4f}")
     middle.metric("Mínimo exacto del simulador", f"{classical['optimal_cost']:.4f}")
     right.metric("Error máximo locales + pares", f"{audit['max_absolute_error']:.4f}")
-    st.caption("Costo por cruce: wD·D/60 + wP·Qmax/30 + wR·R/30. Total: suma por cruces.")
+    st.caption("Costo por cruce: wD·D/60 + wP·Qmax/30 + wR·R/30. Total: suma por cruces. "
+               "blocked_s (segundos con verde EW, cola y destino lleno) solo se reporta, no entra al costo.")
     if not audit["exact_representation"]:
         st.warning("Con cinco cruces, locales y pares vecinos aproximan el costo físico. Se informa su error y pérdida de decisión.")
     rows = []
     for c in result["model"]["combinations"]:
         rows.append({"planes": str(c["plans"]), "costo_simulador": c["total_cost"],
-                     "costo_pares": c["approx_cost"], **c["metrics"], **c["network"]})
+                     "costo_pares": c["approx_cost"], **c["metrics"], **c["network"],
+                     **{f"blocked_s_{k}": v for k, v in c["blocked_s"].items()}})
     st.dataframe(pd.DataFrame(rows), hide_index=True, width="stretch")
     st.write("Óptimo físico:", classical["optimal_plans"])
     st.write("Referencia clásica por pares (programación dinámica):", result["pairwise_classical"])

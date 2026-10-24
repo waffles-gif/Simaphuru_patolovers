@@ -93,7 +93,7 @@ def render_explainer(params: dict, result: dict | None) -> None:
     n = len(ids)
     cycle = params.get("cycle_s", 68)
     all_red = params.get("all_red_s", 4)
-    travel = params.get("travel_time_s", 25)
+    travel = params.get("travel_time_s", 20)
     plans = params["plans"]
 
     steps = ["Corredor", "Elegir plan", "Simular todo", "QUBO → qubits", "QAOA en Qiskit", "Comparar"]

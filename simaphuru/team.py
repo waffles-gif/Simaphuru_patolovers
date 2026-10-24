@@ -177,6 +177,7 @@ def run_team_experiment(params: dict, *, qaoa: bool = True, depth: int = 1,
             "approx_cost": factor_cost(local, pairs, plans),
             "metrics": r["metrics"], "network": network_counts(r),
             "per_intersection_cost": {p["id"]: p["cost"] for p in r["per_intersection"]},
+            "blocked_s": {p["id"]: p["blocked_s"] for p in r["per_intersection"]},
             "one_hot_index": one_hot_index(plans),
         })
     enumeration_ms = (perf_counter() - model_started) * 1000
