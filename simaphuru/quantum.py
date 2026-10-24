@@ -42,7 +42,7 @@ def solve_qaoa(
     restarts: int = 3,
     max_evaluations: int = 60,
 ) -> dict:
-    if depth not in (1, 2) or restarts < 1 or max_evaluations < 1:
+    if depth not in (1, 2, 3) or restarts < 1 or max_evaluations < 1:
         raise ValueError("Configuración de entrenamiento inválida")
     energies = qubo.energies()
     if original_costs is not None and len(original_costs) != len(energies):

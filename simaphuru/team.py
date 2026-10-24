@@ -152,8 +152,8 @@ def _subset(params: dict, indices: list[int]) -> dict:
     return subset
 
 
-def run_team_experiment(params: dict, *, qaoa: bool = True, depth: int = 1,
-                        seed: int = 7, max_evaluations: int = 60) -> dict:
+def run_team_experiment(params: dict, *, qaoa: bool = True, depth: int = 3,
+                        seed: int = 7, max_evaluations: int = 300) -> dict:
     started = perf_counter()
     params = TeamParams.model_validate(params).model_dump()
     n = len(params["intersections"])

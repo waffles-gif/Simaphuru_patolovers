@@ -6,6 +6,9 @@ import numpy as np
 
 from simaphuru.qubo import Qubo
 
+# P = 1.5*(U-L) > U-L: misma garantia; en 2 cruces sube P(optimo) de QAOA p=3 (ver VALIDATION.md).
+PENALTY_FACTOR = 1.5
+
 
 def one_hot_index(plans: list[int] | tuple[int, ...]) -> int:
     """x_i0 y x_i1 ocupan los qubits 2*i y 2*i+1 (peso binario 2**q)."""
@@ -30,7 +33,7 @@ def factor_cost(local: list, pairs: list, plans: list[int] | tuple[int, ...]) ->
 
 
 def build_one_hot(local: list, pairs: list) -> tuple[Qubo, dict]:
-    """P > U-L: todo estado inválido cuesta más que un candidato factible U."""
+    """P = max(1, 1.5*(U-L)) > U-L: todo estado inválido cuesta más que un candidato factible U."""
     n = len(local)
     if not 2 <= n <= 5 or np.shape(local) != (n, 2) or np.shape(pairs) != (n - 1, 2, 2):
         raise ValueError("Se requieren 2..5 cruces, dos planes y pares vecinos 2x2")
@@ -43,7 +46,7 @@ def build_one_hot(local: list, pairs: list) -> tuple[Qubo, dict]:
     ]
     lower = sum(min(0.0, c) for c in linear) + sum(min(0.0, c) for _, _, c in quadratic)
     upper = factor_cost(local, pairs, [0] * n)
-    penalty = max(1.0, upper - lower + 1.0)
+    penalty = max(1.0, PENALTY_FACTOR * (upper - lower))
     for i in range(n):
         linear[2 * i] -= penalty
         linear[2 * i + 1] -= penalty
@@ -61,7 +64,7 @@ def build_one_hot(local: list, pairs: list) -> tuple[Qubo, dict]:
         "penalty": penalty,
         "unpenalized_lower_bound": lower,
         "feasible_upper_bound": upper,
-        "proof": "P > U-L; cualquier estado inválido tiene penalización >= P",
+        "proof": "P = max(1, 1.5(U-L)) > U-L; cualquier estado inválido tiene penalización >= P",
         "feasible_identity_max_error": mismatch,
         "invalid_minimum_energy": invalid_min,
         "feasible_minimum_energy": valid_min,

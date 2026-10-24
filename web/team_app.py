@@ -19,7 +19,7 @@ def render():
     params = default_team_params(n)
     with_qaoa = st.sidebar.checkbox("Ejecutar QAOA en Qiskit local", value=True)
     seed = int(st.sidebar.number_input("Semilla del optimizador", min_value=0, value=7, step=1))
-    depth = st.sidebar.selectbox("Capas QAOA", [1, 2])
+    depth = st.sidebar.selectbox("Capas QAOA", [1, 2, 3], index=2)
     params["travel_time_s"] = st.sidebar.slider("Viaje entre cruces · s", 1, 90, params["travel_time_s"])
     params["storage_vehicles"] = st.sidebar.slider("Capacidad de cada tramo EW (K) · veh", 1, 40,
                                                    params["storage_vehicles"])
