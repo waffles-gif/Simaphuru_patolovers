@@ -69,12 +69,12 @@
       "_comment": "pair_costs[planA][planB] = costo extra por la interaccion A->B (total - local_A - local_B; local + par = total exacto)",
       "A-B": [
         [
-          13.342644,
-          13.408591
+          11.510474,
+          12.072967
         ],
         [
-          9.884561,
-          9.880313
+          8.63284,
+          8.567258
         ]
       ]
     },
@@ -84,15 +84,15 @@
           "A": 0,
           "B": 0
         },
-        "total_cost": 25.920213,
+        "total_cost": 24.088042,
         "metrics": {
-          "mean_delay_s": 228.893,
+          "mean_delay_s": 189.788,
           "peak_queue": 115,
-          "residual": 452
+          "residual": 444
         },
         "per_intersection_cost": {
-          "A": 20.818284,
-          "B": 5.101928
+          "A": 8.186593,
+          "B": 15.901449
         }
       },
       {
@@ -100,15 +100,15 @@
           "A": 0,
           "B": 1
         },
-        "total_cost": 28.222248,
+        "total_cost": 26.886623,
         "metrics": {
-          "mean_delay_s": 259.804,
+          "mean_delay_s": 228.651,
           "peak_queue": 115,
-          "residual": 512
+          "residual": 504
         },
         "per_intersection_cost": {
-          "A": 21.146103,
-          "B": 7.076145
+          "A": 12.499828,
+          "B": 14.386795
         }
       },
       {
@@ -116,15 +116,15 @@
           "A": 1,
           "B": 0
         },
-        "total_cost": 19.16436,
+        "total_cost": 17.912639,
         "metrics": {
-          "mean_delay_s": 181.782,
+          "mean_delay_s": 157.7,
           "peak_queue": 48,
-          "residual": 355
+          "residual": 347
         },
         "per_intersection_cost": {
-          "A": 14.125,
-          "B": 5.03936
+          "A": 4.876471,
+          "B": 13.036168
         }
       },
       {
@@ -132,15 +132,15 @@
           "A": 1,
           "B": 1
         },
-        "total_cost": 21.3962,
+        "total_cost": 20.083145,
         "metrics": {
-          "mean_delay_s": 211.252,
+          "mean_delay_s": 185.766,
           "peak_queue": 17,
-          "residual": 414
+          "residual": 406
         },
         "per_intersection_cost": {
-          "A": 14.320809,
-          "B": 7.075392
+          "A": 5.805515,
+          "B": 14.277631
         }
       }
     ]
@@ -158,7 +158,7 @@
       1,
       0
     ],
-    "optimal_cost": 19.16436,
-    "runtime_ms": 38.528
+    "optimal_cost": 17.912639,
+    "runtime_ms": 42.919
   }
 }
