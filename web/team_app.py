@@ -11,7 +11,7 @@ from web.explainer import render_explainer
 
 
 def render():
-    st.title("🚦 Simaphuru · Motor del equipo")
+    st.title("🚦Simaphuru")
     st.write("Cruces NS/EW conectados por EW, QUBO one-hot y QAOA en Qiskit.")
     st.info("Parámetros ilustrativos. Este motor aún usa colas sin límite; no simula spillback ni paradas de bus.")
     n = st.sidebar.selectbox("Cruces conectados", [2, 5])

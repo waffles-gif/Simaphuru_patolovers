@@ -11,7 +11,7 @@ from simaphuru.models import decision_label, load_scenario
 
 
 def render():
-    st.title("🚦 Simaphuru · Patolovers")
+    st.title("🚦Simaphuru")
     st.write("Tráfico conectado, referencia clásica y QAOA con Qiskit.")
     st.info("Escenarios sintéticos de referencia: todavía no son una calibración de Javier Prado.")
     folder = Path(__file__).resolve().parents[1] / "data" / "scenarios"
