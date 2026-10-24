@@ -57,7 +57,7 @@ Los resultados locales quedan en `artifacts/`, ignorado por Git salvo los cuatro
 
 La verificación local y sus resultados están en `docs/VALIDATION.md`. El estado de las comprobaciones remotas se consulta en la pestaña Actions de GitHub.
 
-**No es una calibración de Javier Prado.** Con cinco cruces, la aproximación vecina elige un plan con costo real 3,55 % mayor que el óptimo en el caso predeterminado. Es una limitación de representación que persiste incluso resolviendo perfectamente ese QUBO. Enumerar los costos ya proporciona el óptimo clásico; no se demuestra ventaja cuántica. Las probabilidades son exactas del simulador cuántico, no conteos de hardware. Ver [resultados ejecutados](docs/VALIDATION.md).
+**No es una calibración de Javier Prado.** Con cinco cruces, la aproximación vecina elige un plan con costo real 8,85 % mayor que el óptimo en el caso predeterminado. Es una limitación de representación que persiste incluso resolviendo perfectamente ese QUBO. Enumerar los costos ya proporciona el óptimo clásico; no se demuestra ventaja cuántica. Las probabilidades son exactas del simulador cuántico, no conteos de hardware. Ver [resultados ejecutados](docs/VALIDATION.md).
 
 ## Organización para trabajar en paralelo
 

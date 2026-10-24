@@ -10,8 +10,8 @@ Revisión del 24/10/2026. Base consultada: [commit ee4eed5](https://github.com/w
 | Llegadas | Externas uniformes a NS y EW de cada cruce | Principal solo en primer cruce; transversal en todos; uniformes/Poisson | Se conservan las entradas del equipo, ajustables por cruce y eje |
 | Programa 1 | NS=40, EW=20 s; perjudica el verde del corredor EW | Principal=40, transversal=20 s | Se respeta NS/EW y se muestra el significado del plan |
 | Ciclo y servicio | 68 s, dos despejes de 4 s, 0,5 veh/s | Mismos valores ilustrativos | Se conservan los del equipo |
-| Viaje entre cruces | 25 s por defecto | 20 s | Se conserva 25 s; ajustable |
-| Almacenamiento | Colas y enlaces sin límite; no hay bloqueo hacia atrás | Capacidad finita en el eje principal | No se atribuye spillback al motor del equipo. La ampliación se mantiene separada |
+| Viaje entre cruces | 25 s por defecto | 20 s | 20 s desde v2 (parámetros de R1); ajustable |
+| Almacenamiento | Colas y enlaces sin límite; no hay bloqueo hacia atrás | Capacidad finita en el eje principal | Desde `team-ns-ew-v2`: K_e = 12 por tramo EW, spillback y backlog externo en el motor del equipo (ver `docs/CONTRACTS.md`) |
 | Costo | Suma por cruce de demora, cola máxima y residual | Tiempo total de inventario más residual global normalizados | Se conserva exactamente el costo del equipo, sin comparar magnitudes entre ambos motores |
 | Codificación | README propone one-hot; aún no contiene implementación cuántica | Un bit por cruce | One-hot de 4 o 10 qubits para 2 o 5 cruces; flujo anterior preservado aparte |
 | Dos cruces | Enumera cuatro planes y obtiene locales/pares | QUBO de dos bits por diferencias | Locales/pares del motor del equipo → QUBO one-hot → Ising → QAOA real |
@@ -20,18 +20,18 @@ Revisión del 24/10/2026. Base consultada: [commit ee4eed5](https://github.com/w
 | Contrato | JSON 0.1, costos redondeados a seis decimales; faltan parámetros físicos | JSON 1.0 incompatible | JSON 0.2 amplía los campos 0.1; importación 0.1 verificada, sin mezclarlo con 1.0 |
 | Pruebas | Siete pruebas de tráfico | Dieciséis pruebas | Pruebas originales más integración, conservación global, one-hot e interfaz |
 
-Se incorporaron los archivos del motor y sus JSON originales. `model/traffic.py`, `model/enumerate.py`, `model/test_traffic.py` y los JSON se mantienen sin cambios respecto al commit consultado. En `model/chain.py` solo se adapta la importación para permitir tanto ejecución directa como importación de paquete. Los `.pyc` publicados por el equipo se excluyen de la entrega y de futuras incorporaciones: son cachés dependientes del entorno, no código fuente.
+Se incorporaron los archivos del motor y sus JSON originales. Desde `team-ns-ew-v2`, `model/traffic.py`, `model/enumerate.py`, `model/test_traffic.py` y los JSON cambian respecto al commit consultado para incorporar almacenamiento finito. En `model/chain.py` solo se adapta la importación para permitir tanto ejecución directa como importación de paquete. Los `.pyc` publicados por el equipo se excluyen de la entrega y de futuras incorporaciones: son cachés dependientes del entorno, no código fuente.
 
 ## Qué resultado cambia una decisión de alcance
 
-Resultados reproducidos con los parámetros predeterminados del equipo, horizonte de 600 s y comienzo vacío:
+Resultados con el motor `team-ns-ew-v2` y los parámetros de R1 (horizonte 1360 s, viaje 20 s, K_e = 12) y comienzo vacío:
 
 | Cruces | Óptimo del simulador | Costo físico óptimo | Plan elegido por locales/pares | Costo real de ese plan | Error máximo de costos |
 |---|---|---:|---|---:|---:|
-| 2 | A=1, B=0 | 10,256000 | A=1, B=0 | 10,256000 | ≈ 0, dentro del redondeo numérico |
-| 5 | A=1, B=1, C=1, D=0, E=0 | 27,773951 | A=1, B=1, C=0, D=0, E=0 | 28,761073 | 4,457058 |
+| 2 | A=1, B=0 | 17,912639 | A=1, B=0 | 17,912639 | ≈ 0, dentro del redondeo numérico |
+| 5 | A=1, B=1, C=1, D=0, E=0 | 48,630476 | A=1, B=1, C=0, D=0, E=1 | 52,933018 | 10,540359 |
 
-La pérdida de decisión para cinco cruces es 0,987122, aproximadamente **3,55 %** del óptimo físico. Es un error de la representación por pares; puede persistir aunque un algoritmo resuelva perfectamente ese QUBO. No se corrige automáticamente añadiendo capas QAOA.
+La pérdida de decisión para cinco cruces es 4,302542, aproximadamente **8,85 %** del óptimo físico. Es un error de la representación por pares; puede persistir aunque un algoritmo resuelva perfectamente ese QUBO. No se corrige automáticamente añadiendo capas QAOA.
 
 Comprometer la demo principal de **dos cruces**. Presentar cinco como experimento que expone y mide una limitación. Ambos son corredores abstractos, no una calibración de Javier Prado.
 
@@ -92,7 +92,7 @@ No existe costo físico definido para un estado que elige cero o dos planes por 
 |---|---|---|---|---|
 | P0 | Acordar denominadores, pendientes y costo terminal | Daniel + Valentino; Rafael revisa el efecto QUBO | Diferencia entre vehículos únicos, visitas, demora y tiempo en el sistema | Conservación por paso; sensibilidad a 600/680/1200 s; publicar conteos incluso sin completar viajes |
 | P0 | Mantener contrato 0.2 completo y misma huella entre costos, QAOA e historial | Tamara + Rafael | Procedencia, orden de bits y versionado | Cambiar un costo importado o parámetro invalida la integración; no reutilizar otro historial |
-| P1 | Almacenamiento finito y bloqueo aguas arriba en el motor del equipo | Valentino | Oferta de envío, capacidad de recepción y ocupación de enlace | Enlace lleno impide transferencia; conservar vehículo en origen; al liberar espacio se reanuda |
+| P1 | Almacenamiento finito y bloqueo aguas arriba en el motor del equipo (hecho en `team-ns-ew-v2`) | Valentino | Oferta de envío, capacidad de recepción y ocupación de enlace | Enlace lleno impide transferencia; conservar vehículo en origen; al liberar espacio se reanuda |
 | P1 | Demanda variable compartida entre candidatos | Daniel define casos; Valentino implementa trazas | Llegadas por movimiento, pelotones y aleatoriedad exógena | Misma traza para todos los planes; resultados por varias semillas; reservar semillas para evaluación |
 | P2 | Parada de bus como reducción temporal de descarga, con ubicación explícita | Daniel + Valentino | Capacidad efectiva, duración y localización de la obstrucción | Fuera de la ventana no cambia capacidad; con factor cero no descarga; no se acumula crédito de servicio |
 | P2 | Revisar calidad del sustituto de cinco cruces | Rafael | Error de representación frente a error del optimizador | Error por estado y pérdida sobre simulador completo; separar conjunto de construcción y evaluación si se ajusta un sustituto |
