@@ -1,6 +1,32 @@
 [theme]
-base = "light"
-primaryColor = "#137565"
+# Asfalto de noche y luces de semáforo: verde = acción, ámbar = EW, azul = NS, rojo = bloqueo.
+base = "dark"
+primaryColor = "#23845A"
+backgroundColor = "#1A1F24"
+secondaryBackgroundColor = "#232A31"
+textColor = "#E9E6DF"
+borderColor = "#343C45"
+showWidgetBorder = true
+linkColor = "#8DB9EE"
+baseRadius = "0.4rem"
+buttonRadius = "0.4rem"
+font = "Barlow:https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&display=swap, sans-serif"
+headingFont = "Barlow Semi Condensed:https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@600;700&display=swap, sans-serif"
+headingFontWeights = [700, 600, 600, 600, 600, 600]
+metricValueFontWeight = 600
+greenColor = "#3DBE80"
+yellowColor = "#E8A33D"
+orangeColor = "#E8A33D"
+blueColor = "#5B9BE6"
+redColor = "#E5484D"
+dataframeHeaderBackgroundColor = "#232A31"
+# Las series se ordenan alfabéticamente (A EW, A NS, B EW, B NS, ...): ámbar para EW y azul para NS,
+# igual que la animación. El primer color (ámbar) también colorea los gráficos de una sola serie.
+chartCategoricalColors = ["#E8A33D", "#5B9BE6", "#F0BE6E", "#8DB9EE", "#C9852A", "#3F7FC9", "#F5D49B", "#B4D0F3", "#A86B1E", "#2C64A6"]
+
+[theme.sidebar]
+backgroundColor = "#151A1E"
+secondaryBackgroundColor = "#1F252B"
 
 [browser]
 gatherUsageStats = false
