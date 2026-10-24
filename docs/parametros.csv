@@ -1,0 +1,14 @@
+Parametro,Valor,Unidades,Fuente,Ano,Limitacion
+Paso de simulacion,1,segundos,Plan Operativo,2026,Resolucion del motor
+Horizonte,1360,segundos,Plan Operativo,2026,Equivale a 20 ciclos
+Tiempo de Ciclo,68,segundos,Plan Operativo,2026,Parametro de laboratorio sintetico
+Reparto A (Prin/Trans),30/30,segundos,Prototipo,2026,Alternativa de decision 1
+Reparto B (Prin/Trans),40/20,segundos,Prototipo,2026,Alternativa de decision 2
+Despejes,4,segundos,Prototipo,2026,Tiempo de seguridad entre fases
+Capacidad de Almacenamiento (K_e),12,vehiculos,Plan Operativo,2026,Limite de tramo propensos a Spillback
+Tasa de Descarga,0.5,veh/s,Plan Operativo,2026,Servicio durante el verde
+Tiempo de Recorrido,20,segundos,Plan Operativo,2026,Tiempo de viaje libre sin detencion
+Velocidad de Congestion,12.7,km/h,TomTom (R3),2025,Promedio Lima; justifica la demanda extrema
+Velocidad Critica Javier Prado,7,km/h,Asociacion Automotriz del Peru (AAP),2025,Velocidad promedio estimada en tramos criticos
+Reduccion Tiempo de Viaje,12,minutos,ACTU / Infobae,2026,Mejora reportada tras intervenciones contra transporte informal
+Tiempo maximo tramo 3.5km,120,minutos,Reporte ACTU,2026,"En hora punta, tramo entre Navarrete y Aviacion"
