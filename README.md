@@ -1,48 +1,69 @@
 # Simaphuru · Patolovers
 
-Base compartida del MVP de tráfico conectado y optimización QUBO/QAOA para Qiskit Fall Fest 2026.
+Simaphuru simula un corredor de semáforos conectados y elige el plan de cada cruce: primero por enumeración clásica exacta y después con QAOA en Qiskit. Proyecto para Qiskit Fall Fest 2026.
 
-**Stack:** Python 3.13 recomendado (compatibilidad declarada 3.11–3.13), Qiskit 2, Aer/Optimization, NumPy/SciPy, Pydantic, Streamlit, pytest y Ruff. Ejecuta QAOA localmente: no necesita cuenta IBM, token ni hardware remoto. Las dependencias resueltas se fijan en `requirements.lock`.
+## Problema / Solución
 
-## Equipo y trabajo previo
+**Problema.** En avenidas congestionadas como Javier Prado, la cola de un cruce llena el tramo hasta el siguiente y bloquea a los autos que vienen detrás (spillback). Programar cada semáforo por separado ignora ese efecto: un plan que mejora un cruce puede empeorar el corredor. El número de combinaciones crece como 2^N con N cruces.
 
-| Rol | Integrante |
-|---|---|
-| R1 · Evidencia y modelo físico | Daniel |
-| R2 · QUBO y Qiskit | Rafael |
-| R3 · Motor de tráfico | Valentino |
-| R4 · Interfaz e integración | Tamara |
+**Solución.** Un simulador de tráfico paso a paso (1 s) con colas NS/EW, capacidad finita K_e por tramo y spillback calcula el costo de cada combinación de planes (demora, cola máxima y cola residual). Esos costos se convierten en un QUBO one-hot, que QAOA resuelve en Qiskit. La interfaz Streamlit compara el resultado con el óptimo clásico exacto, muestra los segundos de bloqueo por cruce y anima el corredor.
 
-Esta entrega se adaptó al [commit ee4eed5 del equipo](https://github.com/waffles-gif/Simaphuru_patolovers/tree/ee4eed52ba3438242aa213532c1eb5761ae5f70e). La opción predeterminada usa su motor `model/traffic.py`, sus llegadas NS/EW, sus costos y su codificación one-hot. Se añadieron QUBO/QAOA, auditoría y Streamlit sobre ese motor. Consultar la [comparación, resultados y mejoras priorizadas](docs/COMPARACION_Y_MEJORAS.md).
+## Resultados
 
-Se conservan el [borrador original del equipo](docs/TEAM_DRAFT.md), `data/model_output.json`, `data/chain_output.json` y `example_result.json`. El último tiene `example=true` y números ficticios; los otros dos son salidas del motor del equipo con parámetros ilustrativos. El flujo integrado exporta schema 0.2 con parámetros completos y campos compatibles con 0.1. El motor anterior de almacenamiento finito, schema 1.0 y un bit por cruce queda explícitamente separado como experimental.
+| | 2 cruces | 5 cruces |
+|---|---|---|
+| Óptimo exacto | A=1,B=0 · 17.913 | 1,1,1,0,0 · 48.630 |
+| Plan más probable de QAOA | el óptimo | 1,1,0,0,1 · 52.933 (óptimo del modelo por pares) |
+| Prob. del óptimo | 28.4 % (azar 25 %) | 3.44 % (azar 3.125 %) |
+| Soluciones válidas | 97.1 % | 98.8 % |
+| Spillback en el óptimo | 0 s | 150 s |
 
-## Empezar en cinco minutos
+Configuración: QAOA p=3, P=1.5·(U−L), 300 evaluaciones por reinicio (3 reinicios de Nelder–Mead), semilla 7, vector de estado exacto local (`qiskit.quantum_info.Statevector`), sin hardware ni shots. Plan 0 = NS/EW 30/30 s; plan 1 = 40/20 s. Costos en las unidades del modelo (`C = wD·D/60 + wP·Qmax/30 + wR·R/30`, suma por cruce). Fuentes: `artifacts/team_two.json`, `artifacts/team_five.json` y [docs/VALIDATION.md](docs/VALIDATION.md), que incluye el barrido de p, P y evaluaciones.
+
+## Limitaciones
+
+- Los parámetros son sintéticos (ciclo 68 s, K_e = 12, viaje 20 s, llegadas constantes). No es un gemelo digital de Javier Prado ni está calibrado con aforos reales.
+- Una sola instancia de tráfico y una sola semilla del optimizador. La mejora de QAOA sobre elegir al azar es pequeña (28.4 % vs 25 %; 3.44 % vs 3.125 %) y no se ha probado con otras semillas.
+- Con 5 cruces el QUBO usa una aproximación por pares de cruces vecinos. Su mejor plan cuesta 8.85 % más que el óptimo real, aunque se resuelva perfectamente; por eso QAOA prefiere ese plan.
+- No hay ventaja cuántica: con 4 o 32 combinaciones la enumeración clásica ya da el óptimo exacto en milisegundos. Las probabilidades salen de una simulación exacta, no de hardware.
+
+## Cómo correrlo
+
+Requiere Python 3.11–3.13 (recomendado 3.13). QAOA corre localmente: no necesita cuenta IBM ni token.
 
 ```sh
 git clone https://github.com/waffles-gif/Simaphuru_patolovers.git
 cd Simaphuru_patolovers
 python3 -m venv .venv
-source .venv/bin/activate
+source .venv/bin/activate            # Windows: py -3.13 -m venv .venv ; .venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
-python -m pytest
-python -m streamlit run app.py
+
+python -m pytest                     # pruebas
+python -m ruff check .               # estilo
+python -m streamlit run app.py       # interfaz: pulsar "Ejecutar experimento"
 ```
 
-En Windows, crear el entorno con `py -3.13 -m venv .venv` y activarlo con `.venv\Scripts\Activate.ps1`; los demás comandos `python -m ...` son iguales. En macOS/Linux, si `python3` apunta a otra versión compatible, puede utilizarse; el entorno comprobado inicialmente es Python 3.13. No instalar paquetes en el Python del sistema.
-
-Abrir la dirección local indicada por Streamlit y pulsar **Ejecutar experimento**. La opción predeterminada es **Motor del equipo · NS/EW**. La instalación inicial requiere internet; los experimentos y la interfaz funcionan localmente después de instalar.
-
-## Ejecutar sin interfaz
+Línea de comandos (mismo motor que la interfaz):
 
 ```sh
-python model/enumerate.py --out data/model_output.json
-python -m quantum.run_qaoa --input data/model_output.json --out artifacts/team_two.json
-python -m quantum.run_qaoa --n 5 --out artifacts/team_five.json
-python -m ruff check .
+python model/enumerate.py --out data/model_output.json                                  # costos de 2 cruces
+python -m quantum.run_qaoa --input data/model_output.json --out artifacts/team_two.json  # QAOA 2 cruces
+python -m quantum.run_qaoa --n 5 --out artifacts/team_five.json                         # QAOA 5 cruces
+python model/chain.py                                                                   # error de la aproximación por pares
 ```
 
-Los resultados locales quedan en `artifacts/`, ignorado por Git salvo los cuatro JSON de referencia incluidos para reproducir la verificación. `python -m quantum.run_qaoa --help` muestra opciones. La entrada 0.1 se verifica regenerando sus costos antes de usarla. `example_result.json` se rechaza como entrada real. La aplicación comparte el mismo motor que la línea de comandos.
+`python -m quantum.run_qaoa --help` muestra las opciones (`--depth`, `--seed`, `--max-evaluations`, `--no-qaoa`). Los resultados locales quedan en `artifacts/`, ignorado por Git salvo los cuatro JSON de referencia.
+
+## Equipo
+
+| Rol | Integrante |
+|---|---|
+| R1 · Evidencia | Daniel |
+| R2 · QUBO y Qiskit | Rafael |
+| R3 · Motor de tráfico | Valentino |
+| R4 · Interfaz y entrega | Tamara |
+
+Esta entrega parte del [commit ee4eed5 del equipo](https://github.com/waffles-gif/Simaphuru_patolovers/tree/ee4eed52ba3438242aa213532c1eb5761ae5f70e). Ver la [comparación y mejoras priorizadas](docs/COMPARACION_Y_MEJORAS.md). Se conservan el [borrador original](docs/TEAM_DRAFT.md) y `example_result.json` (`example=true`, números ficticios). La vista **Experimental · almacenamiento limitado** es un motor anterior con otras ecuaciones y otro costo (schema 1.0); sus cifras no se comparan con las del motor del equipo.
 
 ## Qué incluye el proyecto
 
@@ -52,12 +73,7 @@ Los resultados locales quedan en `artifacts/`, ignorado por Git salvo los cuatro
 - QUBO one-hot, penalización con cota demostrada y auditoría de 16 o 1024 estados binarios. Dos cruces reproducen los costos; cinco se auditan como aproximación.
 - Circuitos QAOA implementados con Qiskit, vector de estado local y ajuste clásico de ángulos.
 - Probabilidad factible, masa inválida, costo físico condicionado y probabilidad no condicionada del óptimo físico.
-- Interfaz, exportación, pruebas originales del equipo y nuevas pruebas de integración; GitHub Actions preparado.
-- Vista experimental separada que conserva la ampliación anterior de almacenamiento finito, demanda variable y obstrucción agregada.
-
-La verificación local y sus resultados están en `docs/VALIDATION.md`. El estado de las comprobaciones remotas se consulta en la pestaña Actions de GitHub.
-
-**No es una calibración de Javier Prado.** Con cinco cruces, la aproximación vecina elige un plan con costo real 8,85 % mayor que el óptimo en el caso predeterminado. Es una limitación de representación que persiste incluso resolviendo perfectamente ese QUBO. Enumerar los costos ya proporciona el óptimo clásico; no se demuestra ventaja cuántica. Las probabilidades son exactas del simulador cuántico, no conteos de hardware. Ver [resultados ejecutados](docs/VALIDATION.md).
+- Interfaz con animación del corredor, exportación JSON, pruebas del motor (incluidos los casos manuales de spillback) e integración; GitHub Actions en Python 3.11 y 3.13.
 
 ## Organización para trabajar en paralelo
 
@@ -94,4 +110,4 @@ git commit -m "Describe el cambio"
 git push -u origin rol3/nombre-del-cambio
 ```
 
-Abrir un pull request a `main` para integrar. No subir `.venv`, tokens, datos personales ni archivos de credenciales. No cambiar unidades, costo u orden de bits sin actualizar contratos, versión y pruebas. Ver [CONTRIBUTING.md](CONTRIBUTING.md).
+Abrir un pull request a `main` para integrar (durante el hackathon se permite push directo a `main`). No subir `.venv`, tokens, datos personales ni archivos de credenciales. No cambiar unidades, costo u orden de bits sin actualizar contratos, versión y pruebas. Ver [CONTRIBUTING.md](CONTRIBUTING.md).

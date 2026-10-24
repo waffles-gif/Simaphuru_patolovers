@@ -52,3 +52,4 @@ Two independent engines coexist; `app.py` picks one via sidebar radio. Never mix
 
 - `artifacts/` is git-ignored except the four reference JSONs used to reproduce validation (`docs/VALIDATION.md`).
 - Team works by role branches (`rol1/…` to `rol4/…`, see `docs/ROLES.md`) with PRs to `main`; keep changes inside the owning module.
+- During the hackathon, pushing directly to `main` is allowed.

@@ -1,0 +1,3 @@
+# Descripción breve
+
+Simaphuru elige los planes de los semáforos de un corredor urbano con QAOA en Qiskit. Problema: en avenidas congestionadas como Javier Prado, la cola de un cruce llena el tramo siguiente y bloquea el cruce anterior (spillback); programar cada semáforo por separado ignora ese efecto. Solución: un simulador de tráfico con capacidad finita por tramo calcula el costo de cada combinación de planes, y esos costos se convierten en un QUBO que QAOA resuelve. Funcionalidades: simulación segundo a segundo con spillback, comparación con el óptimo clásico exacto, probabilidad de cada plan y de soluciones válidas, animación del corredor e interfaz Streamlit. Con 2 cruces, QAOA encuentra el óptimo con 28,4 % de probabilidad (azar: 25 %). Parámetros sintéticos.
