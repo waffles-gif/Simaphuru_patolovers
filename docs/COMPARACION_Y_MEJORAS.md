@@ -73,11 +73,11 @@ Con `x_i,k=1` si se elige el plan k:
 
 La ampliación de la penalización añade una constante `P` por cruce, un término lineal `−P` para cada variable y un término `2P·x_i,0·x_i,1`. No se omite la constante al comparar energías. El objetivo Ising usa `x=(1−Z)/2` y se verifica el orden de bits con tablas asimétricas.
 
-La penalización se justifica mediante una cota: `L` suma los coeficientes negativos de F, por lo que F(x)≥L en todo estado binario; `U=F` de un plan factible conocido. Se elige `P=max(1,U−L+1)`. Todo estado inválido tiene al menos una violación, así que `Q(x)≥L+P>U`. Esto garantiza que el mínimo global del QUBO sea factible; **no** garantiza que el circuito QAOA produzca solo estados factibles. Una P conservadora puede dificultar el entrenamiento al dominar la escala del objetivo.
+La penalización se justifica mediante una cota: `L` suma los coeficientes negativos de F, por lo que F(x)≥L en todo estado binario; `U=F` de un plan factible conocido. Se elige `P=max(1, 1,5·(U−L))`, que sigue cumpliendo P > U−L. Todo estado inválido tiene al menos una violación, así que `Q(x)≥L+P>U`. Esto garantiza que el mínimo global del QUBO sea factible; **no** garantiza que el circuito QAOA produzca solo estados factibles. Una P conservadora puede dificultar el entrenamiento al dominar la escala del objetivo.
 
 Con cinco cruces, los pares se calculan simulando subcorredores aislados de dos cruces. Un cruce lejano recibe una corriente afectada por varios planes anteriores; por eso las sumas vecinas pueden omitir efectos. La auditoría informa error máximo y medio y `C(argmin F)−min C`. El clásico por programación dinámica resuelve F exactamente en O(N·K²), pero F puede aproximar C.
 
-El circuito QAOA usa puertas Qiskit y probabilidades exactas de vector de estado, con tres reinicios de Nelder–Mead y hasta 60 evaluaciones por reinicio. La semilla controla el entrenamiento; el tráfico actual es determinista. Se informa:
+El circuito QAOA usa puertas Qiskit y probabilidades exactas de vector de estado, con p=3 capas, tres reinicios de Nelder–Mead y hasta 300 evaluaciones por reinicio. La semilla controla el entrenamiento; el tráfico actual es determinista. Se informa:
 
 - Probabilidad factible y masa inválida, sin ocultar fallos.
 - Probabilidad sin condicionar de alcanzar el óptimo del simulador.
