@@ -93,3 +93,17 @@ def test_intermediate_corridors_run_and_do_not_expose_a_second_clock(n):
     inspector.set_value(inspector.options[-1]).run()
     assert not app.exception
     assert app.session_state["team_experiment"]["experiment_id"] == old_id
+
+
+def test_grid_view_is_separate_and_reads_the_benchmark():
+    app = AppTest.from_file(str(Path(__file__).resolve().parents[1] / "app.py"), default_timeout=60)
+    app.run()
+    app.radio[0].set_value("Escalabilidad · grilla (experimental)").run()
+    assert not app.exception
+    assert app.title[0].value == "Escalabilidad · grilla de 1000 variables (experimental)"
+
+
+def test_team_engine_remains_the_default_view():
+    app = AppTest.from_file(str(Path(__file__).resolve().parents[1] / "app.py"), default_timeout=60)
+    app.run()
+    assert app.radio[0].value == "Motor del equipo · NS/EW"

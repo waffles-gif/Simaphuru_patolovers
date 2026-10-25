@@ -17,5 +17,6 @@ artifacts/*
 !artifacts/team_five.json
 !artifacts/reference_two.json
 !artifacts/reference_five.json
+!artifacts/grid_1000.json
 .coverage
 htmlcov/
