@@ -15,17 +15,33 @@ from simaphuru.quantum import solve_qaoa
 BLOCK = 5
 
 
-def grid_params(rows: int, cols: int, seed: int = 2026) -> list[dict]:
-    """Una cadena de `cols` cruces por fila; tasas en los rangos de CHAIN_RATES (veh/min)."""
+NS_RANGE, EW_RANGE = (12, 18), (6, 14)  # Mismos rangos que CHAIN_RATES (veh/min).
+
+
+def grid_params(rows: int, cols: int, seed: int = 2026, *, ns_range: tuple = NS_RANGE,
+                ew_range: tuple = EW_RANGE, travel_time_s: int | None = None,
+                storage_vehicles: int | None = None, weights: dict | None = None) -> list[dict]:
+    """Una cadena de `cols` cruces por fila; tasas enteras deterministas por fila (veh/min).
+
+    Los argumentos opcionales en None conservan los valores de default_params().
+    """
     if rows < 1 or cols < 2:
         raise ValueError("Se requieren rows >= 1 y cols >= 2")
+    if any(not 0 <= lo <= hi for lo, hi in (ns_range, ew_range)):
+        raise ValueError("Los rangos de tasas deben cumplir 0 <= mínimo <= máximo")
     grid = []
     for r in range(rows):
         rng = random.Random(seed + r)
         p = default_params()
+        if travel_time_s is not None:
+            p["travel_time_s"] = travel_time_s
+        if storage_vehicles is not None:
+            p["storage_vehicles"] = storage_vehicles
+        if weights is not None:
+            p["weights"] = dict(weights)
         p["intersections"] = [
             {"id": f"F{r}C{c}", "name": f"Fila {r} cruce {c}",
-             "arrival_rate_vpm": {"NS": rng.randint(12, 18), "EW": rng.randint(6, 14)}}
+             "arrival_rate_vpm": {"NS": rng.randint(*ns_range), "EW": rng.randint(*ew_range)}}
             for c in range(cols)
         ]
         grid.append(p)
@@ -99,7 +115,8 @@ def solve_row_local_search(local: list, pairs: list, start: list[int] | None = N
     return plans
 
 
-def run_grid(rows: int, cols: int, qaoa: bool = True, seed: int = 2026) -> dict:
+def run_grid(rows: int, cols: int, qaoa: bool = True, seed: int = 2026, **grid_options) -> dict:
+    """`grid_options` se pasan a grid_params (rangos, viaje, K, pesos)."""
     solvers = {
         "base": lambda local, pairs: [0] * len(local),
         "dp": solve_row_dp,
@@ -115,7 +132,7 @@ def run_grid(rows: int, cols: int, qaoa: bool = True, seed: int = 2026) -> dict:
     times = {name: 0.0 for name in solvers}
     times.update(factors_s=0.0, real_simulation_s=0.0)
     row_results = []
-    for r, params in enumerate(grid_params(rows, cols, seed)):
+    for r, params in enumerate(grid_params(rows, cols, seed, **grid_options)):
         t = perf_counter()
         local, pairs = row_factors(params)
         times["factors_s"] += perf_counter() - t
