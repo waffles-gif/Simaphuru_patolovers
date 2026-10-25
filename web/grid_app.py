@@ -35,11 +35,14 @@ def render() -> None:
     } for key, label in METHODS.items() if key in totals]), hide_index=True, width="stretch",
         column_config={c: st.column_config.NumberColumn(format="%.3f")
                        for c in ("Costo real", "Mejora vs base (%)", "Costo QUBO", "Tiempo (s)")})
-    st.caption("El costo QUBO aproxima por pares y no coincide con el costo real; compare solo "
-               "costos reales. Programación dinámica, QAOA por bloques y búsqueda local quedan a "
-               "menos de 0,04 % entre sí en costo real: es un empate dentro del error de la "
-               "aproximación. La programación dinámica es exacta para el QUBO y tarda "
-               "milisegundos; QAOA tarda 49 s en simulador ideal.")
+    note = ("El costo QUBO aproxima por pares y no coincide con el costo real; compare solo "
+            "costos reales. Programación dinámica, QAOA por bloques y búsqueda local quedan a "
+            "menos de 0,04 % entre sí en costo real: es un empate dentro del error de la "
+            "aproximación. La programación dinámica es exacta para el QUBO y tarda milisegundos")
+    if "qaoa_blocks" in times:
+        qaoa_s = f"{times['qaoa_blocks']:.0f}".replace(".", ",")
+        note += f"; QAOA tarda {qaoa_s} s en simulador ideal"
+    st.caption(note + ".")
 
     blocks = data.get("qaoa_blocks") or {}
     cols = st.columns(4)
