@@ -1,3 +1,5 @@
+*Nota posterior (24/10, noche): la interfaz ahora abre en binaria; la CLI sigue en one-hot.*
+
 # Assessment y plan de cierre para la final
 
 Actualizado el 24/10/2026 por la noche. Final comunicada por Rafael: **25/10/2026, 10:00, Lima**.

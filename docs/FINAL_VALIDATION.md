@@ -1,3 +1,5 @@
+*Nota posterior (24/10, noche): la interfaz ahora abre en binaria; la CLI sigue en one-hot.*
+
 # Validación de la mejora para la final
 
 Fecha: 24/10/2026. Base: `09ed6d0` más los cambios locales de la rama `rol2/final-codificacion-binaria`, paquete 0.3.0. Los JSON registran `git_dirty=true` y hashes SHA-256 de los módulos ejecutados; no atribuir estas cifras a la base sin cambios.

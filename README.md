@@ -12,8 +12,9 @@ P(óptimo) pasa de 28,36% a **99,90%**, con 2 qubits en lugar de 4. El barrido i
 sintéticos, dos tamaños y tres semillas: 36 corridas. Es una mejora de formulación frente a nuestra
 versión one-hot; no una ventaja cuántica frente al óptimo clásico.
 
-One-hot sigue como opción predeterminada para reproducir las cifras históricas siguientes.
-Seleccionar **Representación de programas → Un qubit por cruce · binaria** para probar la mejora.
+La interfaz abre en binaria; one-hot sigue disponible y la CLI la mantiene por defecto para
+reproducir las cifras históricas siguientes. Seleccionar **Representación de programas → Dos qubits
+por cruce · one-hot** para ver la versión inicial.
 La aproximación física de cinco cruces no se elimina al reducir qubits.
 
 Ver [assessment y plan para la final](docs/FINAL_ASSESSMENT.md),
@@ -82,6 +83,11 @@ flowchart LR
 **6. Lo mostramos.** Una app en Streamlit compara el resultado de QAOA con el óptimo exacto, explica el proceso paso a paso y **anima los carros** en el corredor, marcando cuándo un cruce queda bloqueado.
 
 ## Resultados (2 cruces)
+
+Los resultados actuales (codificación binaria e híbrido verificado) están arriba, en
+[Mejora preparada para la final](#mejora-preparada-para-la-final).
+
+### Versión inicial (one-hot, 4 qubits)
 
 | Plan (A, B) | Costo | Segundos bloqueado |
 |---|---|---|
