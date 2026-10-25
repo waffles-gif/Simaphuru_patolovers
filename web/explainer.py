@@ -88,7 +88,7 @@ def _plan_bar(plan: dict, cycle: int, all_red: int) -> str:
             f'<div class="sx-bar">{cells}</div>')
 
 
-def render_explainer(params: dict, result: dict | None) -> None:
+def render_explainer(params: dict, result: dict | None, *, encoding: str = "one_hot") -> None:
     ids = [it["id"] for it in params["intersections"]]
     n = len(ids)
     cycle = params["cycle_s"]
@@ -154,28 +154,37 @@ def render_explainer(params: dict, result: dict | None) -> None:
             f'<span>{1 if (i == bad_first or example[i] == k) else 0}</span>x<sub>{i}{k}</sub></span>'
             for k in range(len(plans))) + "</span>"
         for i in ids)
-    penalty = f'{result["audit"]["one_hot"]["penalty"]:.2f}' if result else "P"
+    penalty = f'{result["audit"]["encoding"]["penalty"]:.2f}' if result else "P"
     c4 = (f'<div class="sx-card"><h4><span class="sx-num">4</span>De costos a qubits (QUBO one-hot)</h4>'
           f'<p>Cada cruce usa {len(plans)} qubits, uno por plan: <b>{len(plans) * n} qubits</b>. '
           f'Debe haber exactamente un 1 por cruce; si no, se suma una penalización de {penalty}.</p>'
           f'<div class="sx-lbl">✅ Válido: un plan por cruce</div>{groups_ok}'
           f'<div class="sx-lbl">❌ Inválido: el cruce {bad_first} tiene dos planes encendidos</div>{groups_bad}'
           f'<div class="sx-note">El costo de cada cruce y de cada par vecino se vuelven los pesos del QUBO.</div></div>')
+    if encoding == "binary":
+        bits = "".join(
+            f'<span class="sx-group"><span class="sx-q{" on" if example[i] else ""}">'
+            f'<span>{example[i]}</span>y<sub>{i}</sub></span></span>' for i in ids)
+        c4 = (f'<div class="sx-card"><h4><span class="sx-num">4</span>QUBO binario compacto</h4>'
+              f'<p><b>{n} qubits</b>: uno por cruce. El bit 0 elige NS/EW 30/30 s y el bit 1 '
+              f'elige 40/20 s. Todos los estados seleccionan exactamente un programa por cruce.</p>{bits}'
+              '<div class="sx-note">Sustituimos x₀=1−y y x₁=y sin alterar los costos por pares. '
+              'No se necesita penalización one-hot. El error del modelo de tráfico por pares se audita aparte.</div></div>')
 
     # 5 · QAOA
     q = result["quantum"] if result else None
     depth = q["depth"] if q else "p"
     optimizer = q["optimizer"] if q else "optimizador clásico"
     boxes = [("|0⟩", "#6B7280", "inicio"), ("H", NS, "todas las combinaciones"),
-             ("γ", EW, "aplica el costo"), ("β", OK, "mezcla"), ("M", "#374151", "medir")]
+             ("γ", EW, "aplica el costo"), ("β", OK, "mezcla"), ("P", "#374151", "probabilidades")]
     gates = '<span class="sx-wire"></span>'.join(
         f'<div class="sx-g"><div style="background:{col}">{t}</div><span>{sub}</span></div>'
         for t, col, sub in boxes)
     c5 = (f'<div class="sx-card"><h4><span class="sx-num">5</span>QAOA en Qiskit</h4>'
-          f'<p>El circuito pone todas las combinaciones a la vez, aplica el costo (γ) y mezcla (β), '
+          f'<p>El circuito prepara una superposición, aplica el costo (γ) y mezcla (β), '
           f'{depth} capa(s). Un optimizador clásico repite y ajusta los ángulos para que las '
-          f'combinaciones baratas salgan más seguido al medir.</p>'
-          f'<div class="sx-circ" role="img" aria-label="Circuito QAOA: inicio, H, costo, mezcla, medir">'
+          f'combinaciones baratas tengan más probabilidad. Aquí calculamos probabilidades ideales en local.</p>'
+          f'<div class="sx-circ" role="img" aria-label="Circuito QAOA: inicio, H, costo, mezcla, probabilidades">'
           f'{gates}</div><div class="sx-loop">↻ {optimizer} ajusta γ y β y vuelve a correr el circuito</div></div>')
 
     # 6 · comparación
@@ -200,7 +209,7 @@ def render_explainer(params: dict, result: dict | None) -> None:
     else:
         body6 = '<div class="sx-note">Ejecuta el experimento con QAOA activado para ver la distribución.</div>'
     c6 = (f'<div class="sx-card"><h4><span class="sx-num">6</span>Comparamos con la respuesta exacta</h4>'
-          f'<p>Medimos el circuito y vemos con qué probabilidad sale cada combinación. '
+          f'<p>Calculamos con qué probabilidad saldría cada combinación al medir el circuito. '
           f'Lo ideal: que la más probable sea el óptimo del paso 3.</p>{body6}</div>')
 
     st.html(f'{CSS}<div class="sx"><div class="sx-strip">{strip}</div>'

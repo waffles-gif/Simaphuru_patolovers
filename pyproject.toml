@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "simaphuru"
-version = "0.2.0"
+version = "0.3.0"
 description = "Laboratorio reproducible de tráfico conectado, QUBO y QAOA con Qiskit"
 readme = "README.md"
 requires-python = ">=3.11,<3.14"

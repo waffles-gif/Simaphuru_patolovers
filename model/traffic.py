@@ -169,11 +169,13 @@ def simulate_chain(plan_ids, params, keep_history=False, initial_state=None):
     history = []
 
     for t in range(t0, t0 + H):
-        step = ({"t": t, "phases": [], "queues": [], "departures": [], "occupancy": [], "backlog": []}
+        step = ({"t": t, "phases": [], "queues": [], "departures": [], "occupancy": [], "backlog": [],
+                 "blocked": []}
                 if keep_history else None)
 
         for i in range(n):
             ph = phase(t, greens[i], cycle, all_red)
+            blocked_this_step = False
             dep = {a: 0 for a in AXES}   # salidas en este segundo (para el test de "sin servicio en rojo")
             for a in AXES:
                 q = queues[i][a]
@@ -203,6 +205,7 @@ def simulate_chain(plan_ids, params, keep_history=False, initial_state=None):
                 if ph == a:
                     if a == "EW" and q and downstream_full(i):
                         blocked[i] += 1
+                        blocked_this_step = True
                     credit[i][a] += mu
                     while credit[i][a] >= 1 and q and not (a == "EW" and downstream_full(i)):
                         credit[i][a] -= 1
@@ -229,6 +232,7 @@ def simulate_chain(plan_ids, params, keep_history=False, initial_state=None):
                 step["departures"].append(dep)
                 step["occupancy"].append(len(queues[i]["EW"]) + transit_n[i])
                 step["backlog"].append(len(backlog[i]))
+                step["blocked"].append(blocked_this_step)
         if keep_history:
             history.append(step)
 

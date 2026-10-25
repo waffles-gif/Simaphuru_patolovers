@@ -1,4 +1,4 @@
-"""QUBO one-hot de locales y pares vecinos, compatible con el contrato de R3."""
+"""Dos codificaciones exactas del mismo costo de locales y pares vecinos."""
 
 import itertools
 
@@ -32,13 +32,62 @@ def factor_cost(local: list, pairs: list, plans: list[int] | tuple[int, ...]) ->
     )
 
 
-def build_one_hot(local: list, pairs: list) -> tuple[Qubo, dict]:
-    """P = max(1, 1.5*(U-L)) > U-L: todo estado inválido cuesta más que un candidato factible U."""
+def _validate_factors(local: list, pairs: list) -> int:
     n = len(local)
     if not 2 <= n <= 5 or np.shape(local) != (n, 2) or np.shape(pairs) != (n - 1, 2, 2):
         raise ValueError("Se requieren 2..5 cruces, dos planes y pares vecinos 2x2")
     if not np.isfinite(local).all() or not np.isfinite(pairs).all():
         raise ValueError("Los costos deben ser finitos")
+    return n
+
+
+def binary_index(plans: list[int] | tuple[int, ...]) -> int:
+    """Plan del cruce i = qubit i; el código humano A…E no es un ket Qiskit."""
+    return sum(plan << i for i, plan in enumerate(plans))
+
+
+def decode_binary(index: int, size: int) -> list[int]:
+    if size < 1 or not 0 <= index < 2**size:
+        raise ValueError("Índice binario fuera del registro")
+    return [(index >> i) & 1 for i in range(size)]
+
+
+def build_binary(local: list, pairs: list) -> tuple[Qubo, dict]:
+    """Sustituye x_i0=1-y_i, x_i1=y_i; no ajusta ni altera el costo por pares.
+
+    Para V(a,b): V00 + (V10-V00)a + (V01-V00)b
+    + (V11-V10-V01+V00)ab. Cada bit elige exactamente uno de dos planes.
+    La identidad con el simulador completo sigue dependiendo de su aproximación F.
+    """
+    n = _validate_factors(local, pairs)
+    constant = float(sum(row[0] for row in local))
+    linear = [float(row[1] - row[0]) for row in local]
+    quadratic = []
+    for i, v in enumerate(pairs):
+        constant += v[0][0]
+        linear[i] += v[1][0] - v[0][0]
+        linear[i + 1] += v[0][1] - v[0][0]
+        quadratic.append((i, i + 1, float(v[1][1] - v[1][0] - v[0][1] + v[0][0])))
+    qubo = Qubo(float(constant), linear, quadratic)
+    energies = qubo.energies()
+    expected = [factor_cost(local, pairs, decode_binary(index, n))
+                for index in range(2**n)]
+    mismatch = float(np.max(np.abs(energies - expected)))
+    if mismatch > 1e-8:
+        raise ValueError("La auditoría binaria falló")
+    return qubo, {
+        "penalty": 0.0,
+        "proof": "y_i=0 elige plan 0; y_i=1 elige plan 1. Todos los estados eligen un plan por cruce.",
+        "feasible_identity_max_error": mismatch,
+        "feasible_minimum_energy": float(energies.min()),
+        "all_global_minimizers_feasible": True,
+        "states_checked": len(energies),
+    }
+
+
+def build_one_hot(local: list, pairs: list) -> tuple[Qubo, dict]:
+    """P = max(1, 1.5*(U-L)) > U-L: todo estado inválido cuesta más que un candidato factible U."""
+    n = _validate_factors(local, pairs)
     linear = [float(c) for row in local for c in row]
     quadratic = [
         (2 * i + a, 2 * (i + 1) + b, float(pairs[i][a][b]))

@@ -4,6 +4,49 @@
 
 Qiskit Fall Fest 2026 · Categoría **Algoritmos y aplicaciones** · Reto *Optimización de rutas y conexiones mediante algoritmos cuánticos* · Equipo **patolovers**
 
+## Mejora preparada para la final
+
+La interfaz permite comparar **one-hot** con una **codificación binaria de un qubit por cruce**, usando
+el mismo simulador, programas y costo por pares. En el caso predeterminado de dos cruces, p=3 y semilla 7,
+P(óptimo) pasa de 28,36% a **99,90%**, con 2 qubits en lugar de 4. El barrido incluye tres escenarios
+sintéticos, dos tamaños y tres semillas: 36 corridas. Es una mejora de formulación frente a nuestra
+versión one-hot; no una ventaja cuántica frente al óptimo clásico.
+
+One-hot sigue como opción predeterminada para reproducir las cifras históricas siguientes.
+Seleccionar **Representación de programas → Un qubit por cruce · binaria** para probar la mejora.
+La aproximación física de cinco cruces no se elimina al reducir qubits.
+
+Ver [assessment y plan para la final](docs/FINAL_ASSESSMENT.md),
+[validación comparativa](docs/FINAL_VALIDATION.md) y [contrato 0.3](docs/CONTRACTS.md).
+
+```sh
+python -m quantum.run_qaoa --n 2 --encoding binary --out artifacts/binary_two.json
+python -m quantum.benchmark_encodings --out artifacts/final_encodings.json
+```
+
+### Híbrido con verificación física
+
+Activar **Comparar búsqueda híbrida** y abrir la pestaña **Híbrido verificado**. Parte del programa
+clásico por pares, muestrea propuestas QAOA y vuelve a simular los candidatos. Conserva el inicial si
+ninguno mejora su costo. Se compara con muestreo uniforme y búsqueda local bajo los mismos límites de
+propuestas y evaluaciones físicas; se informa también el trabajo efectivo y el entrenamiento adicional.
+Esta variante no implementa warm-start del estado cuántico.
+
+```sh
+python -m quantum.run_qaoa --n 5 --encoding binary --hybrid --out artifacts/hybrid_five.json
+python -m quantum.benchmark_hybrid --out artifacts/final_hybrid.json
+```
+
+Ver [protocolo y resultados del híbrido](docs/HYBRID_VALIDATION.md). La mejora verificada no implica que
+el componente cuántico supere a las búsquedas clásicas: se publica la comparación completa.
+
+### Reproductor sincronizado y tamaños intermedios
+
+Animación, tarjetas y reloj comparten un único instante. Mover el deslizador pausa el reproductor;
+las tarjetas muestran también espera externa, tránsito y el evento real de bloqueo registrado por el motor.
+El selector permite **2, 3, 4 o 5 cruces**, sin cambiar el catálogo ni las ecuaciones de tráfico.
+Ver [pruebas de reproducción y evaluación de tres/cuatro cruces](docs/PLAYBACK_AND_CORRIDORS.md).
+
 ---
 
 ## El problema

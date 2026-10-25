@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import pytest
 from streamlit.testing.v1 import AppTest
 
 
@@ -39,3 +40,54 @@ def test_team_view_executes_qiskit_and_invalidates_another_corridor():
     app.sidebar.selectbox[0].set_value(5).run(timeout=30)
     assert not app.exception
     assert len(app.metric) == 0
+
+
+def test_switching_encoding_invalidates_results_and_binary_view_runs():
+    app = AppTest.from_file(str(Path(__file__).resolve().parents[1] / "app.py")).run()
+    app.checkbox[0].uncheck().run()
+    app.button[0].click().run(timeout=30)
+    app.sidebar.selectbox[2].set_value("binary").run()
+    assert not app.exception
+    assert len(app.metric) == 0
+    app.button[0].click().run(timeout=30)
+    assert not app.exception
+    assert app.session_state["team_experiment"]["encoding"]["qubits"] == 2
+
+
+@pytest.mark.parametrize("case", ["empty", "zero_weights"])
+def test_binary_view_handles_zero_cost_and_counts_all_tied_optima(case):
+    app = AppTest.from_file(str(Path(__file__).resolve().parents[1] / "app.py")).run()
+    app.sidebar.selectbox[2].set_value("binary").run()
+    for field in app.number_input:
+        if ((case == "empty" and " · " in field.label)
+                or (case == "zero_weights" and field.label in ("Demora", "Cola máxima", "Residual"))):
+            field.set_value(0.0)
+    app.run()
+    app.button[0].click().run(timeout=30)
+    assert not app.exception
+    assert app.session_state["team_experiment"]["classical"]["optimal_cost"] == 0
+    assert app.metric[2].delta == "+0.0 pp vs azar"
+
+
+@pytest.mark.parametrize("n", [3, 4])
+def test_intermediate_corridors_run_and_do_not_expose_a_second_clock(n):
+    app = AppTest.from_file(str(Path(__file__).resolve().parents[1] / "app.py")).run()
+    assert app.sidebar.selectbox[0].options == ["2", "3", "4", "5"]
+    app.sidebar.selectbox[0].set_value(n).run()
+    app.sidebar.selectbox[2].set_value("binary").run()
+    app.checkbox[1].check().run()
+    app.button[0].click().run(timeout=30)
+    assert not app.exception
+    result = app.session_state["team_experiment"]
+    assert len(result["model"]["combinations"]) == 2**n
+    assert result["encoding"]["qubits"] == n
+    assert result["hybrid"] is not None
+    assert not any("Instante" in slider.label for slider in app.slider)
+    for history in result["histories"].values():
+        assert len(history["history"][0]["blocked"]) == n
+    # Otro programa recrea el reproductor sin recalcular ni mezclar la configuración física.
+    inspector = next(box for box in app.selectbox if box.label == "Planes para inspeccionar")
+    old_id = result["experiment_id"]
+    inspector.set_value(inspector.options[-1]).run()
+    assert not app.exception
+    assert app.session_state["team_experiment"]["experiment_id"] == old_id
