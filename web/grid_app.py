@@ -7,9 +7,9 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import streamlit as st
 
-from model.traffic import default_params, simulate_chain
+from model.traffic import default_params
 from simaphuru.grid import BLOCK, EW_RANGE, NS_RANGE, grid_params, run_grid
-from web.animation import render_animation
+from web.grid_animation import MAX_COLS, render_grid_animation
 
 ARTIFACT = Path(__file__).resolve().parents[1] / "artifacts" / "grid_1000.json"
 METHODS = {"base": "Base (todo 0)", "dp": "Programación dinámica",
@@ -39,25 +39,18 @@ def _improvement(totals: dict, key: str) -> float:
 
 
 def _render_traffic(result: dict, grid: list[dict]) -> None:
-    cols = result["cols"]
-    if cols > 10:
-        st.info("La animación está disponible hasta 10 cruces por fila")
+    rows = list(range(result["rows"]))
+    if result["cols"] <= MAX_COLS:
+        picked = st.multiselect(f"Avenidas a animar (de {len(rows)})", rows, default=rows[:2],
+                                max_selections=3)
+        if picked:
+            picked = sorted(picked)
+            render_grid_animation([result["row_results"][r] for r in picked],
+                                  [grid[r] for r in picked])
+        else:
+            st.info("Elige al menos una avenida")
     else:
-        rows = list(range(result["rows"]))
-        st.caption(f"Se animan {min(2, len(rows))} de las {len(rows)} avenidas; elige cuáles.")
-        left, right = st.columns(2)
-        picked = [left.selectbox("Primera avenida", rows, index=0)]
-        if len(rows) > 1:
-            picked.append(right.selectbox("Segunda avenida", rows, index=1))
-        for r in dict.fromkeys(picked):
-            params = grid[r]
-            plans = result["row_results"][r]["methods"]["dp"]["plans"]
-            ids = [it["id"] for it in params["intersections"]]
-            sim = simulate_chain(plans, params, keep_history=True)
-            st.subheader(f"Avenida EW · fila {r}")
-            st.caption(f"Plan DP: {' · '.join(f'{i}={k}' for i, k in zip(ids, plans))} · "
-                       f"costo real {sim['total_cost']:.3f}")
-            render_animation({"plans": dict(zip(ids, plans)), "history": sim["history"]}, params)
+        st.info(f"La animación está disponible hasta {MAX_COLS} cruces por fila")
     st.caption("Las avenidas se simulan por separado: el eje NS no tiene tramos ni spillback en "
                "el motor actual.")
 

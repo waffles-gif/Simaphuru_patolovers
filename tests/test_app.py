@@ -110,3 +110,13 @@ def test_team_engine_remains_the_default_view():
     app = AppTest.from_file(str(Path(__file__).resolve().parents[1] / "app.py"), default_timeout=90)
     app.run()
     assert app.radio[0].value == "Motor del equipo · NS/EW"
+
+
+def test_grid_animation_draws_selected_avenues_on_a_single_canvas():
+    from simaphuru.grid import grid_params, run_grid
+    from web.grid_animation import grid_animation_html
+
+    result = run_grid(2, 5, qaoa=False)
+    html = grid_animation_html(result["row_results"], grid_params(2, 5))
+    assert html.count("<canvas") == 1
+    assert "sin enlace NS en el modelo" in html
