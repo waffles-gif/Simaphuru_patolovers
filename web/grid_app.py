@@ -44,6 +44,7 @@ def _render_traffic(result: dict, grid: list[dict]) -> None:
         st.info("La animación está disponible hasta 10 cruces por fila")
     else:
         rows = list(range(result["rows"]))
+        st.caption(f"Se animan {min(2, len(rows))} de las {len(rows)} avenidas; elige cuáles.")
         left, right = st.columns(2)
         picked = [left.selectbox("Primera avenida", rows, index=0)]
         if len(rows) > 1:
@@ -70,8 +71,8 @@ def _render_comparison(result: dict) -> None:
         "Mejora vs base (%)": _improvement(totals, key),
         "Costo QUBO": totals[key]["qubo"],
         "Tiempo (s)": times[key],
-        "Bloques aceptados": blocks.get("accepted_blocks") if key == "qaoa_blocks" else None,
-        "Bloques rechazados": blocks.get("rejected_blocks") if key == "qaoa_blocks" else None,
+        "Bloques aceptados": str(blocks.get("accepted_blocks", "—")) if key == "qaoa_blocks" else "—",
+        "Bloques rechazados": str(blocks.get("rejected_blocks", "—")) if key == "qaoa_blocks" else "—",
     } for key, label in METHODS.items() if key in totals]), hide_index=True, width="stretch",
         column_config={c: st.column_config.NumberColumn(format="%.3f")
                        for c in ("Costo real", "Mejora vs base (%)", "Costo QUBO", "Tiempo (s)")})
