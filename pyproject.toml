@@ -12,7 +12,7 @@ dependencies = [
   "numpy>=2.1,<2.4",
   "scipy>=1.15,<1.17",
   "pydantic>=2.10,<3",
-  "qiskit>=2.0,<3",
+  "qiskit>=2.0,<2.5",  # 2.5+ segfault al crear circuitos en hilos nuevos (Streamlit)
   "qiskit-aer==0.18.0",
   "qiskit-optimization==0.7.0",
   "matplotlib>=3.8,<4",

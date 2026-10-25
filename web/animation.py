@@ -6,7 +6,7 @@ de un cruce viajan travel_time_s hasta el siguiente; eso se reconstruye para dib
 
 import json
 
-import streamlit.components.v1 as components
+import streamlit as st
 
 HTML = """
 <style>
@@ -265,4 +265,4 @@ def animation_html(selected: dict, params: dict) -> str:
 
 
 def render_animation(selected: dict, params: dict) -> None:
-    components.html(animation_html(selected, params), height=750, scrolling=True)
+    st.iframe(animation_html(selected, params), height=750)
