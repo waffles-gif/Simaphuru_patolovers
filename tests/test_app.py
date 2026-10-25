@@ -42,16 +42,18 @@ def test_team_view_executes_qiskit_and_invalidates_another_corridor():
     assert len(app.metric) == 0
 
 
-def test_switching_encoding_invalidates_results_and_binary_view_runs():
+def test_switching_encoding_invalidates_results_and_both_views_run():
     app = AppTest.from_file(str(Path(__file__).resolve().parents[1] / "app.py")).run()
+    assert app.sidebar.selectbox[2].value == "binary"  # La interfaz abre en binaria.
     app.checkbox[0].uncheck().run()
     app.button[0].click().run(timeout=30)
-    app.sidebar.selectbox[2].set_value("binary").run()
+    assert app.session_state["team_experiment"]["encoding"]["qubits"] == 2
+    app.sidebar.selectbox[2].set_value("one_hot").run()
     assert not app.exception
     assert len(app.metric) == 0
     app.button[0].click().run(timeout=30)
     assert not app.exception
-    assert app.session_state["team_experiment"]["encoding"]["qubits"] == 2
+    assert app.session_state["team_experiment"]["encoding"]["qubits"] == 4
 
 
 @pytest.mark.parametrize("case", ["empty", "zero_weights"])

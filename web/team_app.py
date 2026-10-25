@@ -356,6 +356,7 @@ def render():
     seed = int(st.sidebar.number_input("Semilla del optimizador", min_value=0, value=7, step=1))
     depth = st.sidebar.selectbox("Capas QAOA", [1, 2, 3], index=2)
     encoding = st.sidebar.selectbox("Representación de programas", list(ENCODING_LABEL),
+                                    index=list(ENCODING_LABEL).index("binary"),
                                     format_func=ENCODING_LABEL.get)
     with_hybrid = st.sidebar.checkbox("Comparar búsqueda híbrida", value=False, disabled=not with_qaoa)
     with st.sidebar.expander("Presupuesto de candidatos"):
